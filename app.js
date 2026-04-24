@@ -42,13 +42,21 @@ AFRAME.registerComponent('gps-new-place', {
   schema: {
     latitude: {type: 'number'},
     longitude: {type: 'number'},
-    modelId: {type: 'string', default: ''}, // The ID of the model in assets OR a direct URL
-    activationDist: {type: 'number', default: 50} // Distance in meters to trigger load
+    modelId: {type: 'string', default: ''}, 
+    activationDist: {type: 'number', default: 50} 
   },
   init: function () {
     this.isLoaded = false;
     this.updatePosition = this.updatePosition.bind(this);
     
+    // WAIT for the engine to be fully active before doing anything
+    if (this.el.sceneEl.renderStarted) {
+      this.begin();
+    } else {
+      this.el.sceneEl.addEventListener('renderstart', () => this.begin());
+    }
+  },
+  begin: function() {
     const isMobile = AFRAME.utils.device.isMobile();
     if (!isMobile) {
       this.initialPos = { coords: { latitude: 37.336111, longitude: -121.885083 } };
