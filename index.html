@@ -3,21 +3,17 @@
   <head>
     <meta charset="utf-8">
     <title>Echoes of Expression AR Exhibition</title>
-    <!-- Import 8frame (Open Source A-Frame fork optimized for 8th Wall) and AR.js for location-based AR -->
-    <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js"></script>
     
-    <!-- 8thWall Open Source Engine Binary & UI -->
+    <!-- 1. 8th Wall Core & A-Frame (Order is strict) -->
+    <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" crossorigin="anonymous"></script>
 
+    <!-- 2. Utilities -->
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
 
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Custom Logic -->
-    <script src="app.js"></script>
   </head>
   
   <body style="margin: 0; overflow: hidden;">
@@ -32,10 +28,9 @@
       xrextras-loading
       xrextras-runtime-error
       vr-mode-ui="enabled: false"
-      renderer="antialias: true; alpha: true"
+      renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
     >
       <a-assets>
-        <!-- Preload ONLY small/essential models (under 10MB) -->
         <a-asset-item id="monster" src="Expression/eoe_monster_animation.glb"></a-asset-item>
         <a-asset-item id="commotion_01" src="Expression/immersion_eoe_commotion_pt_01.glb"></a-asset-item>
         <a-asset-item id="commotion_02" src="Expression/immersion_eoe_commotion_pt_02.glb"></a-asset-item>
@@ -46,35 +41,20 @@
         <a-asset-item id="tv_anim" src="Expression/immersion_eoe_TV_animation.glb"></a-asset-item>
         <a-asset-item id="bird_anim" src="Expression/immersion_eoe_abstract_bird_animation.glb"></a-asset-item>
         <a-asset-item id="spongebob" src="Expression/immersion_eoe_spongemeboi_animation.glb"></a-asset-item>
-
-        <!-- Video is left in assets but typically only downloads on play -->
         <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
       </a-assets>
 
-      <!-- The AR Camera -->
-      <a-camera position="0 1.6 0"></a-camera>
+      <a-camera id="camera" position="0 1.6 0"></a-camera>
 
-      <!-- World wrapper for North alignment using device compass -->
       <a-entity gps-north-align>
-        
-        <!-- HEAVY MODELS: Using lazy loading (only load when within 50 meters) -->
-        
-        <!-- text_as_image (982MB) - Path to Victory: 37.336849, -121.885216 -->
+        <!-- HEAVY MODELS -->
         <a-entity gps-new-place="latitude: 37.336849; longitude: -121.885216; modelId: Expression/text_as_image.glb; activationDist: 50;" scale="1 1 1"></a-entity>
-
-        <!-- wwa_pt_01 (443MB) - 37.335722, -121.882500 -->
         <a-entity gps-new-place="latitude: 37.335722; longitude: -121.882500; modelId: Expression/wwa_pt_01.glb; activationDist: 50;" scale="1 1 1"></a-entity>
-
-        <!-- wwa_pt_02 (136MB) - 37.335472, -121.883389 -->
         <a-entity gps-new-place="latitude: 37.335472; longitude: -121.883389; modelId: Expression/wwa_pt_02.glb; activationDist: 50;" scale="1 1 1"></a-entity>
-
-        <!-- lib_map (60MB) - 37.335306, -121.884556 -->
         <a-entity gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;" scale="1 1 1"></a-entity>
 
-        <!-- SMALL MODELS: Preloaded but using modelId for placeholder consistency -->
-        
+        <!-- SMALL MODELS -->
         <a-entity gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: #monster;" scale="1 1 1" animation-mixer></a-entity>
-
         <a-entity gps-new-place="latitude: 37.336111; longitude: -121.885083; modelId: #commotion_wrapper;">
           <a-entity id="commotion_wrapper">
             <a-entity gltf-model="#commotion_01" position="-2 0 0" scale="1 1 1"></a-entity>
@@ -82,24 +62,16 @@
             <a-entity gltf-model="#commotion_03" position="2 0 0" scale="1 1 1"></a-entity>
           </a-entity>
         </a-entity>
-
-        <a-entity gps-new-place="latitude: 37.336278; longitude: -121.884778; modelId: #commotion_wrapper_2;">
-          <a-entity id="commotion_wrapper_2">
-            <a-entity gltf-model="#commotion_04" position="-2 0 0" scale="1 1 1"></a-entity>
-            <a-entity gltf-model="#commotion_05" position="0 0 0" scale="1 1 1"></a-entity>
-            <a-entity gltf-model="#commotion_06" position="2 0 0" scale="1 1 1"></a-entity>
-          </a-entity>
-        </a-entity>
-
         <a-entity gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: #tv_anim;" scale="1 1 1" animation-mixer></a-entity>
-
         <a-entity gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: #bird_anim;" scale="1 1 1" animation-mixer></a-entity>
-
         <a-entity gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: #spongebob;" scale="1 1 1" animation-mixer></a-entity>
-
         <a-video src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" scale="1 1 1" play-on-click class="clickable"></a-video>
       </a-entity>
-      
     </a-scene>
+
+    <!-- WASM Decoders & Custom Logic (Load at the VERY bottom) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/draco_decoder.js"></script>
+    <script src="https://unpkg.com/meshoptimizer@0.21.0/meshopt_decoder.js"></script>
+    <script src="app.js"></script>
   </body>
 </html>
