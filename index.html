@@ -5,11 +5,13 @@
     <title>Echoes of Expression AR Exhibition</title>
     <!-- Import 8frame (Open Source A-Frame fork optimized for 8th Wall) and AR.js for location-based AR -->
     <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
     
-    <!-- 8thWall Open Source Engine Binary (No App Key Required) -->
-    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous"></script>
+    <!-- 8thWall Open Source Engine Binary & UI -->
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" crossorigin="anonymous"></script>
+
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
@@ -18,8 +20,6 @@
     <script src="app.js"></script>
   </head>
   
-  <!-- Add xrweb component to a-scene to enable 8th Wall AR -->
-  <!-- Note: We are using AR.js location-based features inside 8th Wall's camera -->
   <body style="margin: 0; overflow: hidden;">
     <div id="ui-container">
       <h3>Echoes of Expression</h3>
@@ -27,9 +27,11 @@
     </div>
     
     <a-scene
-      xrweb
+      xrweb="scale: absolute"
+      xrextras-almost-there
+      xrextras-loading
+      xrextras-runtime-error
       vr-mode-ui="enabled: false"
-      arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
       renderer="antialias: true; alpha: true"
     >
       <a-assets>
@@ -55,52 +57,55 @@
         <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
       </a-assets>
 
-      <!-- The AR Camera with gps-camera component from AR.js -->
-      <a-camera smart-gps gps-feedback rotation-reader></a-camera>
+      <!-- The AR Camera -->
+      <a-camera position="0 1.6 0"></a-camera>
 
-      <!-- ARTWORK ENTITIES mapped to specific GPS Coordinates -->
-      
-      <!-- Path to Victory: 37°20'08.6"N 121°52'57.0"W -->
-      <a-entity gltf-model="#wwa_pt_01" gps-entity-place="latitude: 37.335722; longitude: -121.882500;" scale="1 1 1"></a-entity>
+      <!-- World wrapper for North alignment using device compass -->
+      <a-entity gps-north-align>
+        
+        <!-- ARTWORK ENTITIES mapped to specific GPS Coordinates -->
+        
+        <!-- Path to Victory: 37°20'08.6"N 121°52'57.0"W -->
+        <a-entity gltf-model="#wwa_pt_01" gps-new-place="latitude: 37.335722; longitude: -121.882500;" scale="1 1 1"></a-entity>
 
-      <!-- Tower Hall Lawn Area: 37°20'07.7"N 121°53'00.2"W -->
-      <a-entity gltf-model="#wwa_pt_02" gps-entity-place="latitude: 37.335472; longitude: -121.883389;" scale="1 1 1"></a-entity>
+        <!-- Tower Hall Lawn Area: 37°20'07.7"N 121°53'00.2"W -->
+        <a-entity gltf-model="#wwa_pt_02" gps-new-place="latitude: 37.335472; longitude: -121.883389;" scale="1 1 1"></a-entity>
 
-      <!-- Main Entrance to MLK Library - SJSU Side: 37°20'07.1"N 121°53'04.4"W -->
-      <a-entity gltf-model="#lib_map" gps-entity-place="latitude: 37.335306; longitude: -121.884556;" scale="1 1 1"></a-entity>
+        <!-- Main Entrance to MLK Library - SJSU Side: 37°20'07.1"N 121°53'04.4"W -->
+        <a-entity gltf-model="#lib_map" gps-new-place="latitude: 37.335306; longitude: -121.884556;" scale="1 1 1"></a-entity>
 
-      <!-- Main Entrance to MLK Library - City Side: 37°20'08.8"N 121°53'07.8"W -->
-      <a-entity gltf-model="#monster" gps-entity-place="latitude: 37.335778; longitude: -121.885500;" scale="1 1 1" animation-mixer></a-entity>
+        <!-- Main Entrance to MLK Library - City Side: 37°20'08.8"N 121°53'07.8"W -->
+        <a-entity gltf-model="#monster" gps-new-place="latitude: 37.335778; longitude: -121.885500;" scale="1 1 1" animation-mixer></a-entity>
 
-      <!-- SJSU Sidewalk E San Fernando - Walkway to Library: 37°20'10.0"N 121°53'06.3"W -->
-      <!-- Grouping Commotion 01-03 at the same location. Adjust positions slightly relative to coordinate if needed -->
-      <a-entity gps-entity-place="latitude: 37.336111; longitude: -121.885083;">
-        <a-entity gltf-model="#commotion_01" position="-2 0 0" scale="1 1 1"></a-entity>
-        <a-entity gltf-model="#commotion_02" position="0 0 0" scale="1 1 1"></a-entity>
-        <a-entity gltf-model="#commotion_03" position="2 0 0" scale="1 1 1"></a-entity>
+        <!-- SJSU Sidewalk E San Fernando - Walkway to Library: 37°20'10.0"N 121°53'06.3"W -->
+        <a-entity gps-new-place="latitude: 37.336111; longitude: -121.885083;">
+          <a-entity gltf-model="#commotion_01" position="-2 0 0" scale="1 1 1"></a-entity>
+          <a-entity gltf-model="#commotion_02" position="0 0 0" scale="1 1 1"></a-entity>
+          <a-entity gltf-model="#commotion_03" position="2 0 0" scale="1 1 1"></a-entity>
+        </a-entity>
+
+        <!-- SJSU Sidewalk E San Fernando - Film & Theatre: 37°20'10.6"N 121°53'05.2"W -->
+        <a-entity gps-new-place="latitude: 37.336278; longitude: -121.884778;">
+          <a-entity gltf-model="#commotion_04" position="-2 0 0" scale="1 1 1"></a-entity>
+          <a-entity gltf-model="#commotion_05" position="0 0 0" scale="1 1 1"></a-entity>
+          <a-entity gltf-model="#commotion_06" position="2 0 0" scale="1 1 1"></a-entity>
+        </a-entity>
+
+        <!-- Corner of 5th & E San Fernando: 37°20'11.4"N 121°53'05.9"W -->
+        <a-entity gltf-model="#tv_anim" gps-new-place="latitude: 37.336500; longitude: -121.884972;" scale="1 1 1" animation-mixer></a-entity>
+
+        <!-- S 5th St: 37.336849, -121.885216 -->
+        <a-entity gltf-model="#text_img" gps-new-place="latitude: 37.336849; longitude: -121.885216;" scale="1 1 1"></a-entity>
+
+        <!-- City Hall 5th St Entrance & Courtyard Seating: 37°20'15.7"N 121°53'07.7"W -->
+        <a-entity gltf-model="#bird_anim" gps-new-place="latitude: 37.337694; longitude: -121.885472;" scale="1 1 1" animation-mixer></a-entity>
+
+        <!-- South Entrance City Hall: 37°20'14.9"N 121°53'08.4"W -->
+        <a-entity gltf-model="#spongebob" gps-new-place="latitude: 37.337472; longitude: -121.885667;" scale="1 1 1" animation-mixer></a-entity>
+
+        <!-- City Hall Plaza Center: 37°20'15.6"N 121°53'11.1"W (Video) -->
+        <a-video src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" scale="1 1 1" play-on-click class="clickable"></a-video>
       </a-entity>
-
-      <!-- SJSU Sidewalk E San Fernando - Film & Theatre: 37°20'10.6"N 121°53'05.2"W -->
-      <a-entity gps-entity-place="latitude: 37.336278; longitude: -121.884778;">
-        <a-entity gltf-model="#commotion_04" position="-2 0 0" scale="1 1 1"></a-entity>
-        <a-entity gltf-model="#commotion_05" position="0 0 0" scale="1 1 1"></a-entity>
-        <a-entity gltf-model="#commotion_06" position="2 0 0" scale="1 1 1"></a-entity>
-      </a-entity>
-
-      <!-- Corner of 5th & E San Fernando: 37°20'11.4"N 121°53'05.9"W -->
-      <a-entity gltf-model="#tv_anim" gps-entity-place="latitude: 37.336500; longitude: -121.884972;" scale="1 1 1" animation-mixer></a-entity>
-
-      <!-- S 5th St: 37.336849, -121.885216 -->
-      <a-entity gltf-model="#text_img" gps-entity-place="latitude: 37.336849; longitude: -121.885216;" scale="1 1 1"></a-entity>
-
-      <!-- City Hall 5th St Entrance & Courtyard Seating: 37°20'15.7"N 121°53'07.7"W -->
-      <a-entity gltf-model="#bird_anim" gps-entity-place="latitude: 37.337694; longitude: -121.885472;" scale="1 1 1" animation-mixer></a-entity>
-
-      <!-- South Entrance City Hall: 37°20'14.9"N 121°53'08.4"W -->
-      <a-entity gltf-model="#spongebob" gps-entity-place="latitude: 37.337472; longitude: -121.885667;" scale="1 1 1" animation-mixer></a-entity>
-
-      <!-- City Hall Plaza Center: 37°20'15.6"N 121°53'11.1"W (Video) -->
-      <a-video src="#engine_promo" width="16" height="9" gps-entity-place="latitude: 37.337667; longitude: -121.886417;" scale="1 1 1" play-on-click class="clickable"></a-video>
       
     </a-scene>
   </body>
