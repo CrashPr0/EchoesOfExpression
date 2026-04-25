@@ -11,9 +11,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
   </head>
   
-  <body style="margin: 0; overflow: hidden; background: #000;">
+  <body style="margin: 0; overflow: hidden; background: transparent;">
     <script>
-      // SUPER LOGGER - MUST BE FIRST IN BODY
       window.systemLogs = [];
       window.xrState = "Initializing...";
       
@@ -21,43 +20,15 @@
         const time = new Date().toLocaleTimeString();
         window.systemLogs.push({ time, msg, type });
         if (window.systemLogs.length > 100) window.systemLogs.shift();
-        if (type === 'error') {
-          const p = document.getElementById('debug-panel');
-          if (p) p.style.display = 'block';
-        }
         if (window.updateDebugUI) window.updateDebugUI();
       };
 
       console.log = (...args) => { addLog(args.join(' '), 'log'); };
       console.warn = (...args) => { addLog(args.join(' '), 'warn'); };
       console.error = (...args) => { addLog(args.join(' '), 'error'); };
-      window.onerror = (msg, url, line) => { console.error(`GLOBAL ERR: ${msg} line ${line}`); return false; };
 
-      console.log("LOGGER: Active. Starting engine diagnostics...");
-
-      // 8th Wall Safety Bridge
-      (function() {
-        const check = () => {
-          if (window.XR8 && window.XR8.XrController) {
-            console.log("BRIDGE: XR8 Engine found.");
-            window.xrState = "Engine Ready";
-          } else {
-            console.warn("BRIDGE: Waiting for XR8...");
-            setTimeout(check, 1000);
-          }
-        };
-        check();
-
-        window.addEventListener('realityready', () => {
-          console.log("BRIDGE: REALITY READY fired!");
-          window.xrState = "Reality Ready (Live)";
-        });
-
-        window.addEventListener('xrtrackingstatus', (e) => {
-          console.log("BRIDGE: Tracking -> " + e.detail.status);
-          window.xrState = "Tracking: " + e.detail.status;
-        });
-      })();
+      window.addEventListener('realityready', () => { window.xrState = "Reality Ready (Live)"; });
+      window.addEventListener('xrtrackingstatus', (e) => { window.xrState = "Tracking: " + e.detail.status; });
       
       window.copyLogs = () => {
         const text = window.systemLogs.map(l => `[${l.time}] ${l.msg}`).join('\n');
@@ -93,16 +64,18 @@
     </div>
     
     <a-scene
-      xrweb
+      xrweb="scale: absolute"
       xrextras-almost-there
       xrextras-loading
       xrextras-runtime-error
       xrextras-coaching-overlay
       vr-mode-ui="enabled: false"
-      renderer="antialias: true; alpha: true;"
+      renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true; colorManagement: true;"
     >
       <a-assets></a-assets>
-      <a-camera position="0 1.6 0"></a-camera>
+
+      <!-- Fix Z-Plane: Near 0.1, Far 10000 ensures background feed and far objects render -->
+      <a-camera id="camera" camera="near: 0.1; far: 10000;"></a-camera>
 
       <a-entity gps-north-align>
         <a-entity data-name="Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;"></a-entity>
