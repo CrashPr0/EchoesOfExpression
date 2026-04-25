@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
   </head>
   
-  <body style="margin: 0; overflow: hidden; background: #000;">
+  <body style="margin: 0; overflow: hidden;">
     <script>
       window.systemLogs = [];
       window.xrState = "Waiting for Permissions...";
@@ -63,16 +63,22 @@
     </div>
     
     <a-scene
-      xrweb="scale: absolute"
+      xrweb
       xrextras-almost-there
       xrextras-loading
       xrextras-runtime-error
       xrextras-coaching-overlay
       vr-mode-ui="enabled: false"
-      renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
-    >
+      renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true; colorManagement: true;">
+      
       <a-assets></a-assets>
-      <a-camera id="camera" camera="near: 0.1; far: 10000;"></a-camera>
+
+      <a-camera 
+        id="camera" 
+        camera="near: 0.1; far: 10000;" 
+        xrextras-camera-pipeline 
+        raycaster="objects: .clickable">
+      </a-camera>
 
       <a-entity gps-north-align>
         <a-entity data-name="Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;"></a-entity>

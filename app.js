@@ -1,5 +1,13 @@
 console.log("APP: Script started.");
 
+// Ensure XR8 is handled correctly with A-Frame
+const onxrloaded = () => {
+  console.log("APP: XR8 Loaded and ready.");
+  // Add any custom pipeline modules here if needed
+};
+
+window.XR8 ? onxrloaded() : window.addEventListener('xrloaded', onxrloaded);
+
 AFRAME.registerComponent('play-on-click', {
   init: function () {
     this.onClick = () => {
@@ -16,20 +24,29 @@ const debugData = window.debugData;
 
 // Manual Re-request
 window.requestAllPermissions = () => {
-  console.log("APP: Manually requesting 8th Wall permissions...");
-  if (window.XR8) {
-    // Calling run() again on user gesture is the most reliable way to force a prompt
-    window.XR8.stop();
-    window.XR8.run({ canvas: document.querySelector('canvas') });
-    window.xrState = "Permissions Re-requested";
-  }
+  console.log("APP: Requesting camera access...");
+  // Instead of manual XR8.run, we use the standard browser API which often triggers 8th Wall's prompt
+  navigator.mediaDevices.getUserMedia({video: true})
+    .then(() => {
+      console.log("APP: Camera access granted.");
+      window.xrState = "Camera Access Granted. Refreshing...";
+      setTimeout(() => location.reload(), 1000);
+    })
+    .catch(err => {
+      console.error("APP: Camera access denied", err);
+      window.xrState = "Camera Denied: " + err.message;
+    });
 };
 
 window.fixGyro = () => {
   if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
     DeviceOrientationEvent.requestPermission().then(r => { 
       window.xrState = "Gyro: " + r;
+      console.log("APP: Gyro permission: " + r);
     }).catch(console.error);
+  } else {
+    window.xrState = "Gyro: Already active or not supported";
+    console.log("APP: Gyro permission not required or unsupported");
   }
 };
 
