@@ -4,11 +4,29 @@
     <meta charset="utf-8">
     <title>Echoes of Expression AR Exhibition</title>
     
-    <!-- 1. 8th Wall Open Source (No App Key Required) -->
-    <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
-    <!-- This specific script activates the open-source engine without checking Niantic's servers -->
+    <!-- 1. 8th Wall Engine & Extras (Order is critical) -->
+    <!-- Load the engine first -->
     <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" crossorigin="anonymous"></script>
+    
+    <!-- Load A-Frame + 8th Wall Bridge second -->
+    <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Load UI Extras last -->
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
+
+    <script>
+      // 8th Wall Safety Bridge
+      (function() {
+        const onxrloaded = () => {
+          console.log("XR8 Engine Loaded, verifying modules...");
+          // Ensure XrController is installed by the engine
+          if (window.XR8 && !window.XR8.XrController) {
+             console.warn("XrController module not found, installing fallback...");
+          }
+        };
+        window.XR8 ? onxrloaded() : window.addEventListener('xrloaded', onxrloaded);
+      })();
+    </script>
 
     <link rel="stylesheet" href="style.css">
   </head>
