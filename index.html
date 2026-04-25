@@ -5,39 +5,43 @@
     <title>Echoes of Expression AR Exhibition</title>
     
     <!-- 1. 8th Wall Engine & Extras (Order is critical) -->
-    <!-- Force SLAM preload to prevent XrController null error -->
     <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" 
             crossorigin="anonymous" 
             data-preload-chunks="slam"
-            onerror="window.addLog('FAILED to load XR Engine Binary', 'error')"></script>
+            onerror="window.addLog('HTML: FAILED to load XR Engine Binary', 'error')"></script>
     
-    <!-- Load A-Frame + 8th Wall Bridge second -->
-    <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" crossorigin="anonymous" onerror="window.addLog('FAILED to load 8frame Bridge', 'error')"></script>
+    <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" 
+            crossorigin="anonymous" 
+            onerror="window.addLog('HTML: FAILED to load 8frame Bridge', 'error')"></script>
     
-    <!-- Load UI Extras last -->
-    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous" onerror="window.addLog('FAILED to load XRExtras', 'error')"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" 
+            crossorigin="anonymous" 
+            onerror="window.addLog('HTML: FAILED to load XRExtras', 'error')"></script>
 
     <script>
       // 8th Wall Safety Bridge
       (function() {
+        console.log("BRIDGE: Safety Bridge Initialized");
         window.xrState = "Initializing...";
+        
         const checkModules = () => {
+          console.log("BRIDGE: Checking for XR8 modules...");
           if (window.XR8 && window.XR8.XrController) {
-            console.log("XR8 XrController detected.");
+            console.log("BRIDGE: XR8 XrController detected.");
             window.xrState = "Controller Detected";
+          } else {
+            console.warn("BRIDGE: XR8 loaded, but XrController module still pending...");
           }
         };
         window.XR8 ? checkModules() : window.addEventListener('xrloaded', checkModules);
 
-        // Listen for Reality Ready (Dismissal Trigger)
         window.addEventListener('realityready', () => {
-          console.log("8th Wall REALITY READY (Scene visible)");
+          console.log("BRIDGE: 8th Wall REALITY READY");
           window.xrState = "Reality Ready (Live)";
         });
 
-        // Listen for tracking status
         window.addEventListener('xrtrackingstatus', (e) => {
-          console.log("Tracking Status:", e.detail.status);
+          console.log("BRIDGE: Tracking Status ->", e.detail.status);
           window.xrState = "Tracking: " + e.detail.status;
         });
       })();
@@ -48,36 +52,54 @@
   
   <body style="margin: 0; overflow: hidden;">
     <script>
-      // Early Logger - Catches errors before any other scripts run
+      // SUPER LOGGER - Catches EVERYTHING
       window.systemLogs = [];
+      console.log("LOGGER: Initializing Super Logger...");
+
       window.toggleDebug = () => {
         const panel = document.getElementById('debug-panel');
         if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
       };
 
+      window.copyLogs = () => {
+        const text = window.systemLogs.map(l => `[${l.time}] ${l.msg}`).join('\n');
+        navigator.clipboard.writeText(text).then(() => {
+          alert("Logs copied to clipboard!");
+        }).catch(err => {
+          console.error("Copy failed:", err);
+          alert("Copy failed. See console.");
+        });
+      };
+
       const originalLog = console.log;
+      const originalWarn = console.warn;
       const originalError = console.error;
 
       window.addLog = (msg, type = 'log') => {
         const time = new Date().toLocaleTimeString();
         window.systemLogs.push({ time, msg, type });
-        if (window.systemLogs.length > 50) window.systemLogs.shift();
+        if (window.systemLogs.length > 100) window.systemLogs.shift();
+        
         if (type === 'error' && document.getElementById('debug-panel')) {
           document.getElementById('debug-panel').style.display = 'block';
         }
+        
+        // Immediate UI refresh if possible
+        if (window.updateDebugUI) window.updateDebugUI();
       };
 
       console.log = (...args) => { addLog(args.join(' '), 'log'); originalLog.apply(console, args); };
-      console.warn = (...args) => { addLog(args.join(' '), 'warn'); originalLog.apply(console, args); };
+      console.warn = (...args) => { addLog(args.join(' '), 'warn'); originalWarn.apply(console, args); };
       console.error = (...args) => { addLog(args.join(' '), 'error'); originalError.apply(console, args); };
 
-      window.onerror = (msg, url, line) => { console.error(`ERR: ${msg} [${line}]`); return false; };
+      window.onerror = (msg, url, line) => { console.error(`GLOBAL ERR: ${msg} at line ${line}`); return false; };
       window.onunhandledrejection = e => { console.error(`PROMISE ERR: ${e.reason}`); };
+      
+      console.log("LOGGER: Hooks established.");
     </script>
 
-    <!-- Large video moved outside a-assets to prevent blocking the loading screen -->
     <div style="display:none;">
-      <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline onerror="window.addLog('FAILED to load Engine Promo Video: ' + (this.error ? this.error.message : 'Unknown Error'), 'error')"></video>
+      <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline onerror="window.addLog('VIDEO: FAILED to load Promo Video', 'error')"></video>
     </div>
 
     <div id="ui-container">
@@ -86,8 +108,12 @@
     </div>
 
     <button class="debug-btn" onclick="toggleDebug()">Debug</button>
+    
     <div id="debug-panel">
-      <strong>System Debug Log</strong>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <strong>System Debug Log</strong>
+        <button onclick="copyLogs()" style="padding: 4px 8px; font-size: 10px; cursor: pointer;">Copy Logs</button>
+      </div>
       <div id="debug-content"></div>
     </div>
     
@@ -100,20 +126,12 @@
       vr-mode-ui="enabled: false"
       renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
     >
-      <a-assets>
-        <!-- Asset items removed to enable lazy loading via paths -->
-      </a-assets>
+      <a-assets></a-assets>
 
       <a-camera position="0 1.6 0"></a-camera>
 
       <a-entity gps-north-align>
-        <!-- HEAVY MODELS -->
-        <!-- <a-entity data-name="Text as Image" gps-new-place="latitude: 37.336849; longitude: -121.885216; modelId: Expression/text_as_image.glb; activationDist: 50;" scale="1 1 1"></a-entity> -->
-        <!-- <a-entity data-name="WWA Pt 1" gps-new-place="latitude: 37.335722; longitude: -121.882500; modelId: Expression/wwa_pt_01.glb; activationDist: 50;" scale="1 1 1"></a-entity> -->
-        <!-- <a-entity data-name="WWA Pt 2" gps-new-place="latitude: 37.335472; longitude: -121.883389; modelId: Expression/wwa_pt_02.glb; activationDist: 50;" scale="1 1 1"></a-entity> -->
         <a-entity data-name="Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;" scale="1 1 1"></a-entity>
-
-        <!-- SMALL MODELS -->
         <a-entity data-name="Monster" gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: Expression/eoe_monster_animation.glb;" scale="1 1 1"></a-entity>
         <a-entity data-name="Commotion Group" gps-new-place="latitude: 37.336111; longitude: -121.885083;">
           <a-entity id="commotion_wrapper">
@@ -129,7 +147,6 @@
       </a-entity>
     </a-scene>
 
-    <!-- WASM Decoders & Custom Logic -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/draco_decoder.js"></script>
     <script src="https://unpkg.com/meshoptimizer@0.21.0/meshopt_decoder.js"></script>
     <script src="app.js"></script>
