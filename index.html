@@ -3,108 +3,78 @@
   <head>
     <meta charset="utf-8">
     <title>Echoes of Expression AR Exhibition</title>
-    
-    <!-- 1. 8th Wall Engine & Extras (Order is critical) -->
-    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" 
-            crossorigin="anonymous" 
-            data-preload-chunks="slam"
-            onerror="window.addLog('HTML: FAILED to load XR Engine Binary', 'error')"></script>
-    
-    <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" 
-            crossorigin="anonymous" 
-            onerror="window.addLog('HTML: FAILED to load 8frame Bridge', 'error')"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" 
-            crossorigin="anonymous" 
-            onerror="window.addLog('HTML: FAILED to load XRExtras', 'error')"></script>
-
-    <script>
-      // 8th Wall Safety Bridge
-      (function() {
-        console.log("BRIDGE: Safety Bridge Initialized");
-        window.xrState = "Initializing...";
-        
-        const checkModules = () => {
-          console.log("BRIDGE: Checking for XR8 modules...");
-          if (window.XR8 && window.XR8.XrController) {
-            console.log("BRIDGE: XR8 XrController detected.");
-            window.xrState = "Controller Detected";
-          } else {
-            console.warn("BRIDGE: XR8 loaded, but XrController module still pending...");
-          }
-        };
-        window.XR8 ? checkModules() : window.addEventListener('xrloaded', checkModules);
-
-        window.addEventListener('realityready', () => {
-          console.log("BRIDGE: 8th Wall REALITY READY");
-          window.xrState = "Reality Ready (Live)";
-        });
-
-        window.addEventListener('xrtrackingstatus', (e) => {
-          console.log("BRIDGE: Tracking Status ->", e.detail.status);
-          window.xrState = "Tracking: " + e.detail.status;
-        });
-      })();
-    </script>
-
     <link rel="stylesheet" href="style.css">
+    
+    <!-- 1. 8th Wall Engine & Extras -->
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" crossorigin="anonymous" data-preload-chunks="slam"></script>
+    <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
   </head>
   
-  <body style="margin: 0; overflow: hidden;">
+  <body style="margin: 0; overflow: hidden; background: #000;">
     <script>
-      // SUPER LOGGER - Catches EVERYTHING
+      // SUPER LOGGER - MUST BE FIRST IN BODY
       window.systemLogs = [];
-      console.log("LOGGER: Initializing Super Logger...");
-
-      window.toggleDebug = () => {
-        const panel = document.getElementById('debug-panel');
-        if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-      };
-
-      window.copyLogs = () => {
-        try {
-          const text = window.systemLogs.map(l => `[${l.time}] ${l.msg}`).join('\n');
-          const textArea = document.createElement("textarea");
-          textArea.value = text;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
-          alert("Logs copied to clipboard!");
-        } catch (err) {
-          console.error("Copy failed:", err);
-          alert("Copy failed. See console.");
-        }
-      };
-
-      const originalLog = console.log;
-      const originalWarn = console.warn;
-      const originalError = console.error;
-
+      window.xrState = "Initializing...";
+      
       window.addLog = (msg, type = 'log') => {
         const time = new Date().toLocaleTimeString();
         window.systemLogs.push({ time, msg, type });
         if (window.systemLogs.length > 100) window.systemLogs.shift();
-        
-        if (type === 'error' && document.getElementById('debug-panel')) {
-          document.getElementById('debug-panel').style.display = 'block';
+        if (type === 'error') {
+          const p = document.getElementById('debug-panel');
+          if (p) p.style.display = 'block';
         }
-        
         if (window.updateDebugUI) window.updateDebugUI();
       };
 
-      console.log = (...args) => { addLog(args.join(' '), 'log'); originalLog.apply(console, args); };
-      console.warn = (...args) => { addLog(args.join(' '), 'warn'); originalWarn.apply(console, args); };
-      console.error = (...args) => { addLog(args.join(' '), 'error'); originalError.apply(console, args); };
+      console.log = (...args) => { addLog(args.join(' '), 'log'); };
+      console.warn = (...args) => { addLog(args.join(' '), 'warn'); };
+      console.error = (...args) => { addLog(args.join(' '), 'error'); };
+      window.onerror = (msg, url, line) => { console.error(`GLOBAL ERR: ${msg} line ${line}`); return false; };
 
-      window.onerror = (msg, url, line) => { console.error(`GLOBAL ERR: ${msg} at line ${line}`); return false; };
-      window.onunhandledrejection = e => { console.error(`PROMISE ERR: ${e.reason}`); };
+      console.log("LOGGER: Active. Starting engine diagnostics...");
+
+      // 8th Wall Safety Bridge
+      (function() {
+        const check = () => {
+          if (window.XR8 && window.XR8.XrController) {
+            console.log("BRIDGE: XR8 Engine found.");
+            window.xrState = "Engine Ready";
+          } else {
+            console.warn("BRIDGE: Waiting for XR8...");
+            setTimeout(check, 1000);
+          }
+        };
+        check();
+
+        window.addEventListener('realityready', () => {
+          console.log("BRIDGE: REALITY READY fired!");
+          window.xrState = "Reality Ready (Live)";
+        });
+
+        window.addEventListener('xrtrackingstatus', (e) => {
+          console.log("BRIDGE: Tracking -> " + e.detail.status);
+          window.xrState = "Tracking: " + e.detail.status;
+        });
+      })();
       
-      console.log("LOGGER: Hooks established.");
+      window.copyLogs = () => {
+        const text = window.systemLogs.map(l => `[${l.time}] ${l.msg}`).join('\n');
+        const ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta);
+        alert("Logs copied!");
+      };
+      
+      window.toggleDebug = () => {
+        const p = document.getElementById('debug-panel');
+        p.style.display = p.style.display === 'none' ? 'block' : 'none';
+      };
     </script>
 
     <div style="display:none;">
-      <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline onerror="window.addLog('VIDEO: FAILED to load Promo Video', 'error')"></video>
+      <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
     </div>
 
     <div id="ui-container">
@@ -115,40 +85,37 @@
     <button class="debug-btn" onclick="toggleDebug()">Debug</button>
     
     <div id="debug-panel">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <strong>System Debug Log</strong>
-        <button onclick="copyLogs()" style="padding: 4px 8px; font-size: 10px; cursor: pointer;">Copy Logs</button>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+        <strong>System Debug</strong>
+        <button onclick="copyLogs()" style="font-size: 10px;">Copy Logs</button>
       </div>
       <div id="debug-content"></div>
     </div>
     
     <a-scene
-      xrweb="scale: absolute"
+      xrweb
       xrextras-almost-there
       xrextras-loading
       xrextras-runtime-error
       xrextras-coaching-overlay
       vr-mode-ui="enabled: false"
-      renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
+      renderer="antialias: true; alpha: true;"
     >
       <a-assets></a-assets>
-
       <a-camera position="0 1.6 0"></a-camera>
 
       <a-entity gps-north-align>
-        <a-entity data-name="Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;" scale="1 1 1"></a-entity>
-        <a-entity data-name="Monster" gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: Expression/eoe_monster_animation.glb;" scale="1 1 1"></a-entity>
+        <a-entity data-name="Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;"></a-entity>
+        <a-entity data-name="Monster" gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: Expression/eoe_monster_animation.glb;"></a-entity>
         <a-entity data-name="Commotion Group" gps-new-place="latitude: 37.336111; longitude: -121.885083;">
-          <a-entity id="commotion_wrapper">
-            <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_01.glb" position="-2 0 0" scale="1 1 1"></a-entity>
-            <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_02.glb" position="0 0 0" scale="1 1 1"></a-entity>
-            <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_03.glb" position="2 0 0" scale="1 1 1"></a-entity>
-          </a-entity>
+          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_01.glb" position="-2 0 0"></a-entity>
+          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_02.glb" position="0 0 0"></a-entity>
+          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_03.glb" position="2 0 0"></a-entity>
         </a-entity>
-        <a-entity data-name="TV Animation" gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: Expression/immersion_eoe_TV_animation.glb;" scale="1 1 1"></a-entity>
-        <a-entity data-name="Bird Animation" gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: Expression/immersion_eoe_abstract_bird_animation.glb;" scale="1 1 1"></a-entity>
-        <a-entity data-name="Spongebob" gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: Expression/immersion_eoe_spongemeboi_animation.glb;" scale="1 1 1"></a-entity>
-        <a-video data-name="Engine Promo Video" src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" scale="1 1 1" play-on-click class="clickable"></a-video>
+        <a-entity data-name="TV Animation" gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: Expression/immersion_eoe_TV_animation.glb;"></a-entity>
+        <a-entity data-name="Bird Animation" gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: Expression/immersion_eoe_abstract_bird_animation.glb;"></a-entity>
+        <a-entity data-name="Spongebob" gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: Expression/immersion_eoe_spongemeboi_animation.glb;"></a-entity>
+        <a-video data-name="Engine Promo Video" src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" play-on-click class="clickable"></a-video>
       </a-entity>
     </a-scene>
 

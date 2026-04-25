@@ -1,239 +1,136 @@
-console.log("APP: Script execution started.");
+console.log("APP: Script started.");
 
-// Custom A-Frame component to handle video playback on click
 AFRAME.registerComponent('play-on-click', {
   init: function () {
-    console.log("APP: play-on-click component initializing...");
-    try {
-      this.onClick = this.onClick.bind(this);
-      console.log("APP: play-on-click component ready.");
-    } catch (e) {
-      console.error("APP: play-on-click init error:", e);
-    }
+    this.onClick = () => {
+      const video = document.querySelector(this.el.getAttribute('src'));
+      if (video) video.play().catch(e => console.error("APP: Play fail", e));
+    };
   },
-  play: function () {
-    console.log("APP: play-on-click active.");
-    window.addEventListener('click', this.onClick);
-  },
-  pause: function () {
-    console.log("APP: play-on-click paused.");
-    window.removeEventListener('click', this.onClick);
-  },
-  onClick: function (evt) {
-    console.log("APP: Screen clicked, checking for video...");
-    try {
-      const src = this.el.getAttribute('src');
-      console.log("APP: Video src is:", src);
-      const video = src.startsWith('#') ? document.querySelector(src) : null;
-      if (video) { 
-        console.log("APP: Attempting to play video element.");
-        video.play().then(() => {
-          console.log("APP: Video playback started successfully.");
-        }).catch(e => {
-          console.error("APP: Video Playback Denied (Autoplay policy?):", e);
-        });
-      } else {
-        console.warn("APP: Video element NOT FOUND for src:", src);
-      }
-    } catch (e) {
-      console.error("APP: play-on-click click error:", e);
-    }
-  }
+  play: function () { window.addEventListener('click', this.onClick); },
+  pause: function () { window.removeEventListener('click', this.onClick); }
 });
 
-// Use global debug state
 window.debugData = window.debugData || {};
 const debugData = window.debugData;
-window.xrState = window.xrState || "Initializing...";
 
-// DIAGNOSTICS: Check Camera
-window.testCamera = async () => {
-  console.log("DIAG: Testing camera access...");
+// Kickstart Engine
+window.kickstartXR = () => {
+  console.log("APP: Manually KICKSTARTING XR8...");
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    console.log("DIAG: Camera stream ACQUIRED successfully.");
-    stream.getTracks().forEach(track => track.stop());
-    alert("Camera hardware is working and accessible!");
-  } catch (e) {
-    console.error("DIAG: Camera Access FAILED:", e.name, e.message);
-    alert(`Camera Error: ${e.name} - ${e.message}\n\nCheck if you are on HTTPS and if permissions are granted.`);
-  }
-};
-
-// Teleport to Exhibition
-window.teleportToExhibition = () => {
-  console.log("APP: MANUAL TELEPORT triggered.");
-  const simPos = { 
-    coords: { latitude: 37.336111, longitude: -121.885083, accuracy: 5 } 
-  };
-  const entities = document.querySelectorAll('[gps-new-place]');
-  entities.forEach(el => {
-    const comp = el.components['gps-new-place'];
-    if (comp) {
-      comp.initialPos = simPos;
-      comp.updatePosition();
+    if (window.XR8) {
+      window.XR8.run({ canvas: document.querySelector('canvas') });
+      window.xrState = "Manual Run Triggered";
+    } else {
+      console.error("APP: XR8 global not found!");
     }
-  });
-  window.xrState = "Teleported (Simulated)";
+  } catch (e) {
+    console.error("APP: Kickstart error", e);
+  }
 };
 
-// Force Dismiss Loading
-window.dismissLoading = () => {
-  console.log("APP: MANUAL DISMISS LOADING triggered.");
+window.testCamera = async () => {
   try {
-    const style = document.createElement('style');
-    style.innerHTML = `
-      .xrextras-show { display: none !important; } 
-      #loading-screen { display: none !important; } 
-      .xrextras-loading-visible { display: none !important; }
-      #loadingContainer { display: none !important; }
-      .xrextras-loading { display: none !important; }
-    `;
-    document.head.appendChild(style);
-    window.xrState = "Dismissed (Manual)";
-  } catch (e) {
-    console.error("APP: Error during manual dismiss:", e);
-  }
+    const s = await navigator.mediaDevices.getUserMedia({ video: true });
+    s.getTracks().forEach(t => t.stop());
+    alert("Camera OK");
+  } catch (e) { alert("Camera ERR: " + e.message); }
+};
+
+window.teleportToExhibition = () => {
+  const p = { coords: { latitude: 37.336111, longitude: -121.885083, accuracy: 5 } };
+  document.querySelectorAll('[gps-new-place]').forEach(el => {
+    const c = el.components['gps-new-place'];
+    if (c) { c.initialPos = p; c.updatePosition(); }
+  });
+  window.xrState = "Teleported";
+};
+
+window.dismissLoading = () => {
+  console.log("APP: Force dismissing all overlays...");
+  const style = document.createElement('style');
+  style.innerHTML = `
+    .xrextras-show, #loading-screen, .xrextras-loading-visible, 
+    #loadingContainer, .xrextras-loading, .almost-there-visible { 
+      display: none !important; visibility: hidden !important; opacity: 0 !important; 
+    }
+    body, html, a-scene { background: transparent !important; }
+  `;
+  document.head.appendChild(style);
+  window.xrState = "Overlays Hidden";
 };
 
 window.updateDebugUI = () => {
-  try {
-    const content = document.getElementById('debug-content');
-    const panel = document.getElementById('debug-panel');
-    if (!content || !panel || panel.style.display === 'none') return;
-    
-    let html = `<div style="margin-bottom:10px; border-bottom:1px solid #444; padding-bottom:5px;">`;
-    html += `<strong>State:</strong> ${window.xrState}<br>`;
-    html += `<strong>Secure Context (HTTPS):</strong> ${window.isSecureContext ? '✅ YES' : '❌ NO'}<br>`;
-    
-    html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px; margin-top:5px;">`;
-    html += `<button onclick="testCamera()" style="padding:6px; background:#28a745; color:white; border:none; border-radius:4px; font-weight:bold; font-size:10px;">TEST CAMERA</button>`;
-    html += `<button onclick="teleportToExhibition()" style="padding:6px; background:#007bff; color:white; border:none; border-radius:4px; font-weight:bold; font-size:10px;">TELEPORT</button>`;
-    html += `</div>`;
-    html += `<button onclick="dismissLoading()" style="width:100%; margin-top:4px; padding:6px; background:#f00; color:white; border:none; border-radius:4px; font-weight:bold; font-size:10px;">FORCE DISMISS LOADING</button>`;
-    html += `</div>`;
-    
-    html += '<strong>Distances:</strong><br>';
-    const keys = Object.keys(debugData);
-    if (keys.length === 0) html += '<i>No entities tracked...</i><br>';
-    keys.forEach(id => {
-      const entry = debugData[id];
-      const color = entry.distance <= entry.activation ? '#00ff00' : '#ff0000';
-      html += `<div class="debug-row">${entry.name}: <span style="color:${color}">${entry.distance.toFixed(1)}m</span></div>`;
-    });
+  const content = document.getElementById('debug-content');
+  if (!content || document.getElementById('debug-panel').style.display === 'none') return;
+  
+  let html = `<div style="border-bottom:1px solid #444; padding-bottom:5px; margin-bottom:5px;">`;
+  html += `State: ${window.xrState}<br>`;
+  html += `<button onclick="kickstartXR()" style="width:100%; background:#ffc107; color:black; border:none; margin:2px 0; padding:5px; font-weight:bold;">KICKSTART XR8</button>`;
+  html += `<button onclick="testCamera()" style="width:100%; background:#28a745; color:white; border:none; margin:2px 0; padding:5px; font-weight:bold;">TEST CAMERA</button>`;
+  html += `<button onclick="teleportToExhibition()" style="width:100%; background:#007bff; color:white; border:none; margin:2px 0; padding:5px; font-weight:bold;">TELEPORT</button>`;
+  html += `<button onclick="dismissLoading()" style="width:100%; background:#dc3545; color:white; border:none; margin:2px 0; padding:5px; font-weight:bold;">FORCE DISMISS</button>`;
+  html += `</div>`;
+  
+  html += `<strong>Distances:</strong><br>`;
+  Object.keys(debugData).forEach(k => {
+    const e = debugData[k];
+    html += `${e.name}: ${e.distance.toFixed(1)}m<br>`;
+  });
 
-    html += '<br><strong>Logs:</strong><br>';
-    const logs = window.systemLogs || [];
-    logs.slice().reverse().slice(0, 20).forEach(log => {
-      const color = log.type === 'error' ? '#ff4444' : (log.type === 'warn' ? '#ffaa00' : '#00ff00');
-      html += `<div class="debug-row" style="color:${color}; font-size: 10px;">[${log.time}] ${log.msg}</div>`;
-    });
-    content.innerHTML = html;
-  } catch (e) {}
+  html += `<br><strong>Logs:</strong><br>`;
+  (window.systemLogs || []).slice().reverse().slice(0, 15).forEach(l => {
+    html += `<div style="font-size:9px; border-bottom:1px solid #222;">[${l.time}] ${l.msg}</div>`;
+  });
+  content.innerHTML = html;
 };
-
 setInterval(window.updateDebugUI, 1000);
 
-// Align 8th Wall SLAM world with North using device compass
 AFRAME.registerComponent('gps-north-align', {
   init: function () {
-    console.log("APP: gps-north-align initializing...");
-    this.hasAligned = false;
     this.handler = (e) => {
-      let heading = e.webkitCompassHeading || (360 - e.alpha);
-      if (heading !== undefined && !this.hasAligned) {
-        console.log(`APP: Compass signal received. Heading: ${heading.toFixed(1)}`);
-        this.el.setAttribute('rotation', `0 ${-heading} 0`);
-        this.hasAligned = true;
-        const ui = document.getElementById('gps-status');
-        if (ui) ui.innerHTML += "<br>Compass Aligned: " + heading.toFixed(1) + "°";
+      let h = e.webkitCompassHeading || (360 - e.alpha);
+      if (h !== undefined && !this.aligned) {
+        this.el.setAttribute('rotation', `0 ${-h} 0`);
+        this.aligned = true;
         window.xrState = "North Aligned";
       }
     };
     window.addEventListener('deviceorientationabsolute', this.handler, true);
-    window.addEventListener('deviceorientation', this.handler, true);
   }
 });
 
-// Custom GPS placement component for 8th Wall with Lazy Loading
 AFRAME.registerComponent('gps-new-place', {
-  schema: {
-    latitude: {type: 'number'},
-    longitude: {type: 'number'},
-    modelId: {type: 'string', default: ''}, 
-    activationDist: {type: 'number', default: 50} 
-  },
+  schema: { latitude: {type:'number'}, longitude: {type:'number'}, modelId: {type:'string', default:''}, activationDist: {type:'number', default:50} },
   init: function () {
-    this.entityName = this.el.getAttribute('data-name') || 'Unnamed Entity';
-    try {
-      this.isLoaded = false;
-      this.updatePosition = this.updatePosition.bind(this);
-      this.el.addEventListener('model-error', (e) => console.error(`APP: GLTF Error [${this.entityName}]:`, e.detail.src));
-      if (this.el.sceneEl.renderStarted) { this.begin(); } 
-      else { this.el.sceneEl.addEventListener('renderstart', () => this.begin()); }
-    } catch (e) { console.error(`APP: gps-new-place init error [${this.entityName}]:`, e); }
+    this.name = this.el.getAttribute('data-name') || 'Entity';
+    this.updatePosition = this.updatePosition.bind(this);
+    if (this.el.sceneEl.renderStarted) this.begin(); else this.el.sceneEl.addEventListener('renderstart', () => this.begin());
   },
   begin: function() {
-    try {
-      const isMobile = AFRAME.utils.device.isMobile();
-      if (!isMobile) {
-        this.initialPos = { coords: { latitude: 37.336111, longitude: -121.885083, accuracy: 0 } };
-        this.updatePosition();
-      } else {
-        this.watchId = navigator.geolocation.watchPosition(pos => {
-          if (window.xrState !== "Teleported (Simulated)") {
-            this.initialPos = pos;
-            this.updatePosition();
-          }
-          const ui = document.getElementById('gps-status');
-          if (ui) ui.innerHTML = `Lat: ${pos.coords.latitude.toFixed(5)} <br> Lon: ${pos.coords.longitude.toFixed(5)} <br> Acc: ${pos.coords.accuracy.toFixed(1)}m`;
-        }, err => {
-          console.error(`APP: GEOLOCATION ERROR:`, err.message);
-        }, {enableHighAccuracy: true});
-      }
-    } catch (e) { console.error(`APP: Error in begin():`, e); }
+    if (!AFRAME.utils.device.isMobile()) {
+      this.initialPos = { coords: { latitude: 37.336111, longitude: -121.885083 } };
+      this.updatePosition();
+    } else {
+      navigator.geolocation.watchPosition(p => {
+        if (window.xrState !== "Teleported") { this.initialPos = p; this.updatePosition(); }
+      }, e => console.error("GPS ERR", e.message), {enableHighAccuracy:true});
+    }
   },
-  remove: function() {
-    if (this.watchId) navigator.geolocation.clearWatch(this.watchId);
-    delete debugData[this.entityName];
-  },
-  updatePosition: function () {
-    try {
-      if (!this.initialPos) return;
-      const userLat = this.initialPos.coords.latitude;
-      const userLon = this.initialPos.coords.longitude;
-      const targetLat = this.data.latitude;
-      const targetLon = this.data.longitude;
-      const R = 6371e3; 
-      const dLat = (targetLat - userLat) * Math.PI / 180;
-      const dLon = (targetLon - userLon) * Math.PI / 180;
-      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(userLat * Math.PI / 180) * Math.cos(targetLat * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = R * c;
-      const y = Math.sin(dLon) * Math.cos(targetLat * Math.PI / 180);
-      const x = Math.cos(userLat * Math.PI / 180) * Math.sin(targetLat * Math.PI / 180) - Math.sin(userLat * Math.PI / 180) * Math.cos(targetLat * Math.PI / 180) * Math.cos(dLon);
-      const bearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-      const xPos = distance * Math.sin(bearing * Math.PI / 180);
-      const zPos = -distance * Math.cos(bearing * Math.PI / 180);
-      this.el.setAttribute('position', `${xPos} 0 ${zPos}`);
-      debugData[this.entityName] = { name: this.entityName, distance: distance, activation: this.data.activationDist, isLoaded: this.isLoaded };
-      if (!this.placeholder && this.data.modelId) {
-        this.placeholder = document.createElement('a-box');
-        this.placeholder.setAttribute('color', '#00ff00');
-        this.placeholder.setAttribute('opacity', '0.5');
-        this.placeholder.setAttribute('scale', '2 2 2');
-        this.el.appendChild(this.placeholder);
-      }
-      if (distance <= this.data.activationDist && !this.isLoaded && this.data.modelId) {
-        this.el.setAttribute('gltf-model', this.data.modelId);
-        this.isLoaded = true;
-        this.el.addEventListener('model-loaded', () => { if (this.placeholder) { this.el.removeChild(this.placeholder); this.placeholder = null; } }, {once: true});
-      } else if (distance > this.data.activationDist + 10 && this.isLoaded) {
-        this.el.removeAttribute('gltf-model');
-        this.isLoaded = false;
-      }
-    } catch (e) { console.error(`APP: updatePosition error:`, e); }
+  updatePosition: function() {
+    if (!this.initialPos) return;
+    const R=6371e3, dLat=(this.data.latitude-this.initialPos.coords.latitude)*Math.PI/180, dLon=(this.data.longitude-this.initialPos.coords.longitude)*Math.PI/180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(this.initialPos.coords.latitude*Math.PI/180)*Math.cos(this.data.latitude*Math.PI/180)*Math.sin(dLon/2)**2;
+    const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const y = Math.sin(dLon)*Math.cos(this.data.latitude*Math.PI/180), x = Math.cos(this.initialPos.coords.latitude*Math.PI/180)*Math.sin(this.data.latitude*Math.PI/180)-Math.sin(this.initialPos.coords.latitude*Math.PI/180)*Math.cos(this.data.latitude*Math.PI/180)*Math.cos(dLon);
+    const bear = (Math.atan2(y,x)*180/Math.PI+360)%360;
+    this.el.setAttribute('position', `${dist*Math.sin(bear*Math.PI/180)} 0 ${-dist*Math.cos(bear*Math.PI/180)}`);
+    debugData[this.name] = { name:this.name, distance:dist };
+    if (!this.loaded && dist <= this.data.activationDist && this.data.modelId) {
+      this.el.setAttribute('gltf-model', this.data.modelId);
+      this.loaded = true;
+    }
   }
 });
 
-console.log("APP: Script execution finished.");
+console.log("APP: Loaded.");
