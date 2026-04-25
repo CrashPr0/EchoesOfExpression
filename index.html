@@ -62,13 +62,19 @@
       };
 
       window.copyLogs = () => {
-        const text = window.systemLogs.map(l => `[${l.time}] ${l.msg}`).join('\n');
-        navigator.clipboard.writeText(text).then(() => {
+        try {
+          const text = window.systemLogs.map(l => `[${l.time}] ${l.msg}`).join('\n');
+          const textArea = document.createElement("textarea");
+          textArea.value = text;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
           alert("Logs copied to clipboard!");
-        }).catch(err => {
+        } catch (err) {
           console.error("Copy failed:", err);
           alert("Copy failed. See console.");
-        });
+        }
       };
 
       const originalLog = console.log;
@@ -84,7 +90,6 @@
           document.getElementById('debug-panel').style.display = 'block';
         }
         
-        // Immediate UI refresh if possible
         if (window.updateDebugUI) window.updateDebugUI();
       };
 

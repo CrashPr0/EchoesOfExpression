@@ -80,6 +80,7 @@ window.dismissLoading = () => {
       #loading-screen { display: none !important; } 
       .xrextras-loading-visible { display: none !important; }
       #loadingContainer { display: none !important; }
+      .xrextras-loading { display: none !important; }
     `;
     document.head.appendChild(style);
     window.xrState = "Dismissed (Manual)";
@@ -126,7 +127,6 @@ window.updateDebugUI = () => {
     
     content.innerHTML = html;
   } catch (e) {
-    // Can't use regular log here or we might loop
     console.warn("APP: UI Update error", e);
   }
 };
