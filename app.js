@@ -42,23 +42,31 @@ AFRAME.registerComponent('play-on-click', {
 });
 
 // Use global debug state
-console.log("APP: Setting up global debugData...");
 window.debugData = window.debugData || {};
 const debugData = window.debugData;
 window.xrState = window.xrState || "Initializing...";
 
-// Teleport to Exhibition (For testing off-site)
+// DIAGNOSTICS: Check Camera
+window.testCamera = async () => {
+  console.log("DIAG: Testing camera access...");
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    console.log("DIAG: Camera stream ACQUIRED successfully.");
+    stream.getTracks().forEach(track => track.stop());
+    alert("Camera hardware is working and accessible!");
+  } catch (e) {
+    console.error("DIAG: Camera Access FAILED:", e.name, e.message);
+    alert(`Camera Error: ${e.name} - ${e.message}\n\nCheck if you are on HTTPS and if permissions are granted.`);
+  }
+};
+
+// Teleport to Exhibition
 window.teleportToExhibition = () => {
   console.log("APP: MANUAL TELEPORT triggered.");
   const simPos = { 
-    coords: { 
-      latitude: 37.336111, 
-      longitude: -121.885083, 
-      accuracy: 5 
-    } 
+    coords: { latitude: 37.336111, longitude: -121.885083, accuracy: 5 } 
   };
   const entities = document.querySelectorAll('[gps-new-place]');
-  console.log(`APP: Teleporting ${entities.length} entities...`);
   entities.forEach(el => {
     const comp = el.components['gps-new-place'];
     if (comp) {
@@ -67,7 +75,6 @@ window.teleportToExhibition = () => {
     }
   });
   window.xrState = "Teleported (Simulated)";
-  console.log("APP: Teleport complete.");
 };
 
 // Force Dismiss Loading
@@ -84,7 +91,6 @@ window.dismissLoading = () => {
     `;
     document.head.appendChild(style);
     window.xrState = "Dismissed (Manual)";
-    console.log("APP: Force dismiss CSS injected.");
   } catch (e) {
     console.error("APP: Error during manual dismiss:", e);
   }
@@ -98,37 +104,32 @@ window.updateDebugUI = () => {
     
     let html = `<div style="margin-bottom:10px; border-bottom:1px solid #444; padding-bottom:5px;">`;
     html += `<strong>State:</strong> ${window.xrState}<br>`;
-    html += `<button onclick="teleportToExhibition()" style="width:100%; margin:4px 0; padding:6px; background:#007bff; color:white; border:none; border-radius:4px; font-weight:bold;">TELEPORT TO SJSU</button><br>`;
-    html += `<button onclick="dismissLoading()" style="width:100%; margin:4px 0; padding:6px; background:#f00; color:white; border:none; border-radius:4px; font-weight:bold;">FORCE DISMISS LOADING</button>`;
+    html += `<strong>Secure Context (HTTPS):</strong> ${window.isSecureContext ? '✅ YES' : '❌ NO'}<br>`;
+    
+    html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px; margin-top:5px;">`;
+    html += `<button onclick="testCamera()" style="padding:6px; background:#28a745; color:white; border:none; border-radius:4px; font-weight:bold; font-size:10px;">TEST CAMERA</button>`;
+    html += `<button onclick="teleportToExhibition()" style="padding:6px; background:#007bff; color:white; border:none; border-radius:4px; font-weight:bold; font-size:10px;">TELEPORT</button>`;
+    html += `</div>`;
+    html += `<button onclick="dismissLoading()" style="width:100%; margin-top:4px; padding:6px; background:#f00; color:white; border:none; border-radius:4px; font-weight:bold; font-size:10px;">FORCE DISMISS LOADING</button>`;
     html += `</div>`;
     
     html += '<strong>Distances:</strong><br>';
     const keys = Object.keys(debugData);
-    if (keys.length === 0) html += '<i>No entities tracked yet...</i><br>';
-    
+    if (keys.length === 0) html += '<i>No entities tracked...</i><br>';
     keys.forEach(id => {
       const entry = debugData[id];
       const color = entry.distance <= entry.activation ? '#00ff00' : '#ff0000';
-      html += `<div class="debug-row">
-        ${entry.name}: <span style="color:${color}">${entry.distance.toFixed(1)}m</span> (${entry.isLoaded ? 'LOADED' : 'WAIT'})
-      </div>`;
+      html += `<div class="debug-row">${entry.name}: <span style="color:${color}">${entry.distance.toFixed(1)}m</span></div>`;
     });
 
     html += '<br><strong>Logs:</strong><br>';
     const logs = window.systemLogs || [];
-    if (logs.length === 0) html += '<i>No logs captured...</i>';
-    
-    logs.slice().reverse().forEach(log => {
+    logs.slice().reverse().slice(0, 20).forEach(log => {
       const color = log.type === 'error' ? '#ff4444' : (log.type === 'warn' ? '#ffaa00' : '#00ff00');
-      html += `<div class="debug-row" style="color:${color}; font-size: 10px; border-bottom:1px solid #222;">
-        [${log.time}] ${log.msg}
-      </div>`;
+      html += `<div class="debug-row" style="color:${color}; font-size: 10px;">[${log.time}] ${log.msg}</div>`;
     });
-    
     content.innerHTML = html;
-  } catch (e) {
-    console.warn("APP: UI Update error", e);
-  }
+  } catch (e) {}
 };
 
 setInterval(window.updateDebugUI, 1000);
@@ -149,7 +150,6 @@ AFRAME.registerComponent('gps-north-align', {
         window.xrState = "North Aligned";
       }
     };
-
     window.addEventListener('deviceorientationabsolute', this.handler, true);
     window.addEventListener('deviceorientation', this.handler, true);
   }
@@ -165,38 +165,21 @@ AFRAME.registerComponent('gps-new-place', {
   },
   init: function () {
     this.entityName = this.el.getAttribute('data-name') || 'Unnamed Entity';
-    console.log(`APP: gps-new-place init for [${this.entityName}]`);
     try {
       this.isLoaded = false;
       this.updatePosition = this.updatePosition.bind(this);
-      
-      this.el.addEventListener('model-error', (e) => {
-        console.error(`APP: GLTF Error [${this.entityName}]:`, e.detail.src);
-      });
-
-      this.el.addEventListener('model-loaded', () => {
-        console.log(`APP: GLTF Loaded SUCCESS [${this.entityName}]`);
-      });
-
-      if (this.el.sceneEl.renderStarted) {
-        this.begin();
-      } else {
-        this.el.sceneEl.addEventListener('renderstart', () => this.begin());
-      }
-    } catch (e) {
-      console.error(`APP: gps-new-place init error [${this.entityName}]:`, e);
-    }
+      this.el.addEventListener('model-error', (e) => console.error(`APP: GLTF Error [${this.entityName}]:`, e.detail.src));
+      if (this.el.sceneEl.renderStarted) { this.begin(); } 
+      else { this.el.sceneEl.addEventListener('renderstart', () => this.begin()); }
+    } catch (e) { console.error(`APP: gps-new-place init error [${this.entityName}]:`, e); }
   },
   begin: function() {
-    console.log(`APP: gps-new-place begin for [${this.entityName}]`);
     try {
       const isMobile = AFRAME.utils.device.isMobile();
       if (!isMobile) {
-        console.log(`APP: Non-mobile detected, using SJSU mock coordinates for [${this.entityName}]`);
         this.initialPos = { coords: { latitude: 37.336111, longitude: -121.885083, accuracy: 0 } };
         this.updatePosition();
       } else {
-        console.log(`APP: Starting GPS watch for [${this.entityName}]`);
         this.watchId = navigator.geolocation.watchPosition(pos => {
           if (window.xrState !== "Teleported (Simulated)") {
             this.initialPos = pos;
@@ -205,94 +188,52 @@ AFRAME.registerComponent('gps-new-place', {
           const ui = document.getElementById('gps-status');
           if (ui) ui.innerHTML = `Lat: ${pos.coords.latitude.toFixed(5)} <br> Lon: ${pos.coords.longitude.toFixed(5)} <br> Acc: ${pos.coords.accuracy.toFixed(1)}m`;
         }, err => {
-          console.error(`APP: GEOLOCATION ERROR [${this.entityName}]:`, err.message);
-          const ui = document.getElementById('gps-status');
-          if (ui) ui.innerHTML = `<span style="color:red">GPS ERROR: ${err.message}</span>`;
+          console.error(`APP: GEOLOCATION ERROR:`, err.message);
         }, {enableHighAccuracy: true});
       }
-    } catch (e) {
-      console.error(`APP: Error in begin() for [${this.entityName}]:`, e);
-    }
+    } catch (e) { console.error(`APP: Error in begin():`, e); }
   },
   remove: function() {
-    console.log(`APP: Removing gps-new-place for [${this.entityName}]`);
     if (this.watchId) navigator.geolocation.clearWatch(this.watchId);
     delete debugData[this.entityName];
   },
   updatePosition: function () {
     try {
       if (!this.initialPos) return;
-      
       const userLat = this.initialPos.coords.latitude;
       const userLon = this.initialPos.coords.longitude;
       const targetLat = this.data.latitude;
       const targetLon = this.data.longitude;
-      
       const R = 6371e3; 
       const dLat = (targetLat - userLat) * Math.PI / 180;
       const dLon = (targetLon - userLon) * Math.PI / 180;
-      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(userLat * Math.PI / 180) * Math.cos(targetLat * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(userLat * Math.PI / 180) * Math.cos(targetLat * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const distance = R * c;
-      
       const y = Math.sin(dLon) * Math.cos(targetLat * Math.PI / 180);
-      const x = Math.cos(userLat * Math.PI / 180) * Math.sin(targetLat * Math.PI / 180) -
-                Math.sin(userLat * Math.PI / 180) * Math.cos(targetLat * Math.PI / 180) * Math.cos(dLon);
+      const x = Math.cos(userLat * Math.PI / 180) * Math.sin(targetLat * Math.PI / 180) - Math.sin(userLat * Math.PI / 180) * Math.cos(targetLat * Math.PI / 180) * Math.cos(dLon);
       const bearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-      
       const xPos = distance * Math.sin(bearing * Math.PI / 180);
       const zPos = -distance * Math.cos(bearing * Math.PI / 180);
-      
       this.el.setAttribute('position', `${xPos} 0 ${zPos}`);
-
-      // Update debug log
-      debugData[this.entityName] = {
-        name: this.entityName,
-        distance: distance,
-        activation: this.data.activationDist,
-        isLoaded: this.isLoaded
-      };
-
+      debugData[this.entityName] = { name: this.entityName, distance: distance, activation: this.data.activationDist, isLoaded: this.isLoaded };
       if (!this.placeholder && this.data.modelId) {
-        console.log(`APP: Adding green placeholder for [${this.entityName}]`);
         this.placeholder = document.createElement('a-box');
         this.placeholder.setAttribute('color', '#00ff00');
         this.placeholder.setAttribute('opacity', '0.5');
         this.placeholder.setAttribute('scale', '2 2 2');
-        this.placeholder.setAttribute('material', 'emissive: #00ff00; emissiveIntensity: 0.5');
-        this.placeholder.setAttribute('animation', 'property: rotation; to: 0 360 0; dur: 3000; easing: linear; loop: true');
         this.el.appendChild(this.placeholder);
       }
-
       if (distance <= this.data.activationDist && !this.isLoaded && this.data.modelId) {
-        const modelSource = this.data.modelId;
-        console.log(`APP: Distance threshold met (${distance.toFixed(1)}m). Loading model: ${modelSource}`);
-        this.el.setAttribute('gltf-model', modelSource);
+        this.el.setAttribute('gltf-model', this.data.modelId);
         this.isLoaded = true;
-        
-        this.el.addEventListener('model-loaded', () => {
-          if (this.placeholder) {
-            console.log(`APP: Removing placeholder for [${this.entityName}]`);
-            this.el.removeChild(this.placeholder);
-            this.placeholder = null;
-          }
-        }, {once: true});
-
-        this.el.addEventListener('model-error', (e) => {
-          console.error(`APP: GLTF Load Error (${this.entityName}):`, modelSource);
-          this.isLoaded = false;
-        }, {once: true});
+        this.el.addEventListener('model-loaded', () => { if (this.placeholder) { this.el.removeChild(this.placeholder); this.placeholder = null; } }, {once: true});
       } else if (distance > this.data.activationDist + 10 && this.isLoaded) {
-        console.log(`APP: Distance exceeded (${distance.toFixed(1)}m). Unloading [${this.entityName}]`);
         this.el.removeAttribute('gltf-model');
         this.isLoaded = false;
       }
-    } catch (e) {
-      console.error(`APP: updatePosition error [${this.entityName}]:`, e);
-    }
+    } catch (e) { console.error(`APP: updatePosition error:`, e); }
   }
 });
 
-console.log("APP: Script execution finished (Hooks registered).");
+console.log("APP: Script execution finished.");
