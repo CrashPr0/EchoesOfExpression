@@ -5,8 +5,11 @@
     <title>Echoes of Expression AR Exhibition</title>
     
     <!-- 1. 8th Wall Engine & Extras (Order is critical) -->
-    <!-- Load the engine first -->
-    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" crossorigin="anonymous" onerror="window.addLog('FAILED to load XR Engine Binary', 'error')"></script>
+    <!-- Force SLAM preload to prevent XrController null error -->
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" 
+            crossorigin="anonymous" 
+            data-preload-chunks="slam"
+            onerror="window.addLog('FAILED to load XR Engine Binary', 'error')"></script>
     
     <!-- Load A-Frame + 8th Wall Bridge second -->
     <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" crossorigin="anonymous" onerror="window.addLog('FAILED to load 8frame Bridge', 'error')"></script>
@@ -17,14 +20,17 @@
     <script>
       // 8th Wall Safety Bridge
       (function() {
-        const onxrloaded = () => {
-          console.log("XR8 Engine Loaded, verifying modules...");
-          // Ensure XrController is installed by the engine
-          if (window.XR8 && !window.XR8.XrController) {
-             console.warn("XrController module not found, installing fallback...");
+        const checkModules = () => {
+          if (window.XR8 && window.XR8.XrController) {
+            console.log("XR8 XrController detected and ready.");
+          } else {
+            console.warn("XR8 loaded, but XrController module still pending...");
+            window.addEventListener('xr8moduleloaded', (e) => {
+              if (e.detail.name === 'xrcontroller') console.log("XrController module loaded via event!");
+            });
           }
         };
-        window.XR8 ? onxrloaded() : window.addEventListener('xrloaded', onxrloaded);
+        window.XR8 ? checkModules() : window.addEventListener('xrloaded', checkModules);
       })();
     </script>
 
@@ -81,6 +87,7 @@
       xrextras-almost-there
       xrextras-loading
       xrextras-runtime-error
+      xrextras-coaching-overlay
       vr-mode-ui="enabled: false"
       renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
     >
