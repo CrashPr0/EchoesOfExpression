@@ -17,6 +17,11 @@
   </head>
   
   <body style="margin: 0; overflow: hidden;">
+    <!-- Large video moved outside a-assets to prevent blocking the loading screen -->
+    <div style="display:none;">
+      <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
+    </div>
+
     <div id="ui-container">
       <h3>Echoes of Expression</h3>
       <div id="gps-status">Finding location...</div>
@@ -31,17 +36,7 @@
       renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
     >
       <a-assets>
-        <a-asset-item id="monster" src="Expression/eoe_monster_animation.glb"></a-asset-item>
-        <a-asset-item id="commotion_01" src="Expression/immersion_eoe_commotion_pt_01.glb"></a-asset-item>
-        <a-asset-item id="commotion_02" src="Expression/immersion_eoe_commotion_pt_02.glb"></a-asset-item>
-        <a-asset-item id="commotion_03" src="Expression/immersion_eoe_commotion_pt_03.glb"></a-asset-item>
-        <a-asset-item id="commotion_04" src="Expression/immersion_eoe_commotion_pt_04.glb"></a-asset-item>
-        <a-asset-item id="commotion_05" src="Expression/immersion_eoe_commotion_pt_05.glb"></a-asset-item>
-        <a-asset-item id="commotion_06" src="Expression/immersion_eoe_commotion_pt_06.glb"></a-asset-item>
-        <a-asset-item id="tv_anim" src="Expression/immersion_eoe_TV_animation.glb"></a-asset-item>
-        <a-asset-item id="bird_anim" src="Expression/immersion_eoe_abstract_bird_animation.glb"></a-asset-item>
-        <a-asset-item id="spongebob" src="Expression/immersion_eoe_spongemeboi_animation.glb"></a-asset-item>
-        <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
+        <!-- Asset items removed to enable lazy loading via paths -->
       </a-assets>
 
       <a-camera position="0 1.6 0"></a-camera>
@@ -54,17 +49,17 @@
         <a-entity gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;" scale="1 1 1"></a-entity>
 
         <!-- SMALL MODELS -->
-        <a-entity gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: #monster;" scale="1 1 1"></a-entity>
+        <a-entity gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: Expression/eoe_monster_animation.glb;" scale="1 1 1"></a-entity>
         <a-entity gps-new-place="latitude: 37.336111; longitude: -121.885083;">
           <a-entity id="commotion_wrapper">
-            <a-entity gltf-model="#commotion_01" position="-2 0 0" scale="1 1 1"></a-entity>
-            <a-entity gltf-model="#commotion_02" position="0 0 0" scale="1 1 1"></a-entity>
-            <a-entity gltf-model="#commotion_03" position="2 0 0" scale="1 1 1"></a-entity>
+            <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_01.glb" position="-2 0 0" scale="1 1 1"></a-entity>
+            <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_02.glb" position="0 0 0" scale="1 1 1"></a-entity>
+            <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_03.glb" position="2 0 0" scale="1 1 1"></a-entity>
           </a-entity>
         </a-entity>
-        <a-entity gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: #tv_anim;" scale="1 1 1"></a-entity>
-        <a-entity gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: #bird_anim;" scale="1 1 1"></a-entity>
-        <a-entity gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: #spongebob;" scale="1 1 1"></a-entity>
+        <a-entity gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: Expression/immersion_eoe_TV_animation.glb;" scale="1 1 1"></a-entity>
+        <a-entity gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: Expression/immersion_eoe_abstract_bird_animation.glb;" scale="1 1 1"></a-entity>
+        <a-entity gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: Expression/immersion_eoe_spongemeboi_animation.glb;" scale="1 1 1"></a-entity>
         <a-video src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" scale="1 1 1" play-on-click class="clickable"></a-video>
       </a-entity>
     </a-scene>

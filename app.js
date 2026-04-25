@@ -10,9 +10,11 @@ AFRAME.registerComponent('play-on-click', {
     window.removeEventListener('click', this.onClick);
   },
   onClick: function (evt) {
-    var video = document.querySelector(this.el.getAttribute('src'));
+    const src = this.el.getAttribute('src');
+    const video = src.startsWith('#') ? document.querySelector(src) : null;
     if (video) { 
       video.play(); 
+      console.log("Playing video:", src);
     }
   }
 });
@@ -49,7 +51,6 @@ AFRAME.registerComponent('gps-new-place', {
     this.isLoaded = false;
     this.updatePosition = this.updatePosition.bind(this);
     
-    // WAIT for the engine to be fully active before doing anything
     if (this.el.sceneEl.renderStarted) {
       this.begin();
     } else {
@@ -113,7 +114,9 @@ AFRAME.registerComponent('gps-new-place', {
     }
 
     if (distance <= this.data.activationDist && !this.isLoaded && this.data.modelId) {
-      this.el.setAttribute('gltf-model', this.data.modelId);
+      // Logic for direct paths vs IDs
+      const modelSource = this.data.modelId;
+      this.el.setAttribute('gltf-model', modelSource);
       this.isLoaded = true;
       
       this.el.addEventListener('model-loaded', () => {
