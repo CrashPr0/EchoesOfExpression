@@ -29,8 +29,9 @@ AFRAME.registerComponent('play-on-click', {
   }
 });
 
-// Global debug state
-const debugData = {};
+// Use global debug state
+window.debugData = window.debugData || {};
+const debugData = window.debugData;
 
 function updateDebugUI() {
   const content = document.getElementById('debug-content');
