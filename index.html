@@ -86,42 +86,48 @@
       </a-camera>
 
       <a-entity gps-north-align>
-        <a-entity data-name="Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;"></a-entity>
-        <a-entity data-name="Monster" gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: Expression/eoe_monster_animation.glb;"></a-entity>
-        <a-entity data-name="Commotion Group" gps-new-place="latitude: 37.336111; longitude: -121.885083;">
+        <!-- Who We Are -->
+        <a-entity data-name="Victory Statue Cameo" gps-new-place="latitude: 37.335404; longitude: -121.882501; modelId: Expression/wwa_cameo.glb;"></a-entity>
+        <a-entity data-name="Victory Statue Pt 1" gps-new-place="latitude: 37.335500; longitude: -121.882556; modelId: Expression/wwa_pt_01_vict_stat.glb;"></a-entity>
+        
+        <a-entity data-name="Path to Victory" gps-new-place="latitude: 37.335722; longitude: -121.882500;">
+          <a-entity gltf-model="Expression/wwa_pt_03_tow_hall_draco" position="0 0 0"></a-entity>
+          <a-entity gltf-model="Expression/wwa_endangered_draco" position="2 0 0"></a-entity>
+        </a-entity>
+
+        <a-entity data-name="Tower Hall Lawn" gps-new-place="latitude: 37.335472; longitude: -121.883389; modelId: Expression/wwa_pt_02_tow_hall.glb;"></a-entity>
+
+        <!-- Echoes of Expression -->
+        <a-entity data-name="MLK Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb;"></a-entity>
+        
+        <!-- Monster model missing from repo, placeholder used below if found -->
+        <a-entity data-name="Monster (Missing)" gps-new-place="latitude: 37.335778; longitude: -121.885500;"></a-entity>
+
+        <a-entity data-name="Commotion Walkway" gps-new-place="latitude: 37.336111; longitude: -121.885083;">
           <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_01.glb" position="-2 0 0"></a-entity>
           <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_02.glb" position="0 0 0"></a-entity>
           <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_03.glb" position="2 0 0"></a-entity>
         </a-entity>
+
+        <a-entity data-name="Commotion Theatre" gps-new-place="latitude: 37.336278; longitude: -121.884778;">
+          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_04.glb" position="-2 0 0"></a-entity>
+          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_05.glb" position="0 0 0"></a-entity>
+          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_06.glb" position="2 0 0"></a-entity>
+        </a-entity>
+
         <a-entity data-name="TV Animation" gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: Expression/immersion_eoe_TV_animation.glb;"></a-entity>
+        
+        <!-- text_as_image_draco is the optimized version -->
+        <a-entity data-name="Text as Image" gps-new-place="latitude: 37.336849; longitude: -121.885216; modelId: Expression/text_as_image_draco;"></a-entity>
+
         <a-entity data-name="Bird Animation" gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: Expression/immersion_eoe_abstract_bird_animation.glb;"></a-entity>
         <a-entity data-name="Spongebob" gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: Expression/immersion_eoe_spongemeboi_animation.glb;"></a-entity>
+        
         <a-video data-name="Engine Promo Video" src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" play-on-click class="clickable"></a-video>
       </a-entity>
     </a-scene>
 
     <!-- Post-scene scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/draco_decoder.js"></script>
-    <script src="https://unpkg.com/meshoptimizer@0.21.0/meshopt_decoder.js"></script>
-    <script src="app.js"></script>
-  </body>
-</html>
-
-      <a-entity gps-north-align>
-        <a-entity data-name="Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;"></a-entity>
-        <a-entity data-name="Monster" gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: Expression/eoe_monster_animation.glb;"></a-entity>
-        <a-entity data-name="Commotion Group" gps-new-place="latitude: 37.336111; longitude: -121.885083;">
-          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_01.glb" position="-2 0 0"></a-entity>
-          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_02.glb" position="0 0 0"></a-entity>
-          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_03.glb" position="2 0 0"></a-entity>
-        </a-entity>
-        <a-entity data-name="TV Animation" gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: Expression/immersion_eoe_TV_animation.glb;"></a-entity>
-        <a-entity data-name="Bird Animation" gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: Expression/immersion_eoe_abstract_bird_animation.glb;"></a-entity>
-        <a-entity data-name="Spongebob" gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: Expression/immersion_eoe_spongemeboi_animation.glb;"></a-entity>
-        <a-video data-name="Engine Promo Video" src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" play-on-click class="clickable"></a-video>
-      </a-entity>
-    </a-scene>
-
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/draco_decoder.js"></script>
     <script src="https://unpkg.com/meshoptimizer@0.21.0/meshopt_decoder.js"></script>
     <script src="app.js"></script>
