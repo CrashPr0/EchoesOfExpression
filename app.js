@@ -28,16 +28,31 @@ AFRAME.registerComponent('play-on-click', {
     }
   }
 });
-
 // Use global debug state
 window.debugData = window.debugData || {};
 const debugData = window.debugData;
+window.xrState = "Initializing...";
+
+// Force Dismiss Loading
+window.dismissLoading = () => {
+  console.log("MANUALLY dismissing loading screen...");
+  const loading = document.getElementById('loading-screen') || document.querySelector('.xrextras-show');
+  if (loading) loading.style.display = 'none';
+  // Also try hiding by class if it's the 8th wall standard one
+  const style = document.createElement('style');
+  style.innerHTML = '.xrextras-show { display: none !important; } #loading-screen { display: none !important; }';
+  document.head.appendChild(style);
+  window.xrState = "Dismissed (Manual)";
+};
 
 function updateDebugUI() {
   const content = document.getElementById('debug-content');
   if (!content || document.getElementById('debug-panel').style.display === 'none') return;
-  
-  let html = '<strong>Distance Tracker</strong><br>';
+
+  let html = `<strong>Engine State: ${window.xrState}</strong><br>`;
+  html += `<button onclick="dismissLoading()" style="padding:4px; background:#f00; color:white; border:none; border-radius:4px; margin-bottom:10px;">FORCE DISMISS LOADING</button><br>`;
+  html += '<strong>Distance Tracker</strong><br>';
+...
   Object.keys(debugData).forEach(id => {
     const entry = debugData[id];
     const color = entry.distance <= entry.activation ? '#00ff00' : '#ff0000';

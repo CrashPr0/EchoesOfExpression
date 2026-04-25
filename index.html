@@ -20,17 +20,26 @@
     <script>
       // 8th Wall Safety Bridge
       (function() {
+        window.xrState = "Initializing...";
         const checkModules = () => {
           if (window.XR8 && window.XR8.XrController) {
-            console.log("XR8 XrController detected and ready.");
-          } else {
-            console.warn("XR8 loaded, but XrController module still pending...");
-            window.addEventListener('xr8moduleloaded', (e) => {
-              if (e.detail.name === 'xrcontroller') console.log("XrController module loaded via event!");
-            });
+            console.log("XR8 XrController detected.");
+            window.xrState = "Controller Detected";
           }
         };
         window.XR8 ? checkModules() : window.addEventListener('xrloaded', checkModules);
+
+        // Listen for Reality Ready (Dismissal Trigger)
+        window.addEventListener('realityready', () => {
+          console.log("8th Wall REALITY READY (Scene visible)");
+          window.xrState = "Reality Ready (Live)";
+        });
+
+        // Listen for tracking status
+        window.addEventListener('xrtrackingstatus', (e) => {
+          console.log("Tracking Status:", e.detail.status);
+          window.xrState = "Tracking: " + e.detail.status;
+        });
       })();
     </script>
 
