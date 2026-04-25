@@ -2,19 +2,25 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <title>Echoes of Expression AR Exhibition</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- 1. 8th Wall Engine & Extras -->
-    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" crossorigin="anonymous" data-preload-chunks="slam"></script>
+    <!-- 1. 8th Wall Engine & Extras (2026 Distributed Engine) -->
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" crossorigin="anonymous" data-preload-chunks="slam" async></script>
     <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous" async></script>
   </head>
   
   <body style="margin: 0; overflow: hidden;">
+    <!-- 
+      This product includes the XR Engine software developed by Niantic Spatial, Inc.
+      Copyright © 2026 Niantic Spatial, Inc. All rights reserved. 
+    -->
+
     <script>
       window.systemLogs = [];
-      window.xrState = "Waiting for Permissions...";
+      window.xrState = "Initializing...";
       
       window.addLog = (msg, type = 'log') => {
         const time = new Date().toLocaleTimeString();
@@ -67,7 +73,6 @@
       xrextras-almost-there
       xrextras-loading
       xrextras-runtime-error
-      xrextras-coaching-overlay
       vr-mode-ui="enabled: false"
       renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true; colorManagement: true;">
       
@@ -79,6 +84,28 @@
         xrextras-camera-pipeline 
         raycaster="objects: .clickable">
       </a-camera>
+
+      <a-entity gps-north-align>
+        <a-entity data-name="Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;"></a-entity>
+        <a-entity data-name="Monster" gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: Expression/eoe_monster_animation.glb;"></a-entity>
+        <a-entity data-name="Commotion Group" gps-new-place="latitude: 37.336111; longitude: -121.885083;">
+          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_01.glb" position="-2 0 0"></a-entity>
+          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_02.glb" position="0 0 0"></a-entity>
+          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_03.glb" position="2 0 0"></a-entity>
+        </a-entity>
+        <a-entity data-name="TV Animation" gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: Expression/immersion_eoe_TV_animation.glb;"></a-entity>
+        <a-entity data-name="Bird Animation" gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: Expression/immersion_eoe_abstract_bird_animation.glb;"></a-entity>
+        <a-entity data-name="Spongebob" gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: Expression/immersion_eoe_spongemeboi_animation.glb;"></a-entity>
+        <a-video data-name="Engine Promo Video" src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" play-on-click class="clickable"></a-video>
+      </a-entity>
+    </a-scene>
+
+    <!-- Post-scene scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/draco_decoder.js"></script>
+    <script src="https://unpkg.com/meshoptimizer@0.21.0/meshopt_decoder.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
 
       <a-entity gps-north-align>
         <a-entity data-name="Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;"></a-entity>
