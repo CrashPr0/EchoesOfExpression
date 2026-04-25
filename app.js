@@ -14,49 +14,22 @@ AFRAME.registerComponent('play-on-click', {
 window.debugData = window.debugData || {};
 const debugData = window.debugData;
 
-// 1. Fix Gyro & Permissions (Required for iOS)
-window.fixGyro = () => {
-  console.log("APP: Requesting Motion Permissions...");
-  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-    DeviceOrientationEvent.requestPermission()
-      .then(response => {
-        console.log("APP: Permission response: " + response);
-        if (response == 'granted') {
-          window.xrState = "Gyro Granted";
-          // Re-init north align if it missed the first event
-          const aligner = document.querySelector('[gps-north-align]');
-          if (aligner && aligner.components['gps-north-align']) {
-            aligner.components['gps-north-align'].init();
-          }
-        } else {
-          alert("Permission denied. Gyro will not work.");
-        }
-      })
-      .catch(console.error);
-  } else {
-    console.log("APP: Non-iOS or old browser, permission check skipped.");
-    window.xrState = "Gyro (Auto)";
+// Manual Re-request
+window.requestAllPermissions = () => {
+  console.log("APP: Manually requesting 8th Wall permissions...");
+  if (window.XR8) {
+    // Calling run() again on user gesture is the most reliable way to force a prompt
+    window.XR8.stop();
+    window.XR8.run({ canvas: document.querySelector('canvas') });
+    window.xrState = "Permissions Re-requested";
   }
 };
 
-// 2. Aggressive Kickstart
-window.kickstartXR = () => {
-  console.log("APP: Aggressive KICKSTART starting...");
-  try {
-    if (window.XR8) {
-      // Force stop then run to reset the state
-      window.XR8.stop();
-      window.XR8.run({ 
-        canvas: document.querySelector('canvas'),
-        ownScene: false,
-        cameraConfig: { direction: window.XR8.XrConfig.camera().BACK }
-      });
-      window.xrState = "XR Reset Triggered";
-    } else {
-      alert("XR8 not loaded yet!");
-    }
-  } catch (e) {
-    console.error("APP: Kickstart error", e);
+window.fixGyro = () => {
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().then(r => { 
+      window.xrState = "Gyro: " + r;
+    }).catch(console.error);
   }
 };
 
@@ -71,46 +44,27 @@ window.teleportToExhibition = () => {
 
 window.dismissLoading = () => {
   const style = document.createElement('style');
-  style.innerHTML = `
-    .xrextras-show, #loading-screen, .xrextras-loading-visible, 
-    #loadingContainer, .xrextras-loading, .almost-there-visible { 
-      display: none !important; visibility: hidden !important; opacity: 0 !important; 
-    }
-    body, html, a-scene { background: transparent !important; }
-  `;
+  style.innerHTML = '.xrextras-show, #loading-screen, .xrextras-loading-visible, #loadingContainer, .xrextras-loading, .almost-there-visible { display: none !important; visibility: hidden !important; opacity: 0 !important; }';
   document.head.appendChild(style);
   window.xrState = "Overlays Hidden";
 };
 
 window.updateDebugUI = () => {
   const content = document.getElementById('debug-content');
-  const cam = document.getElementById('camera');
   if (!content || document.getElementById('debug-panel').style.display === 'none') return;
   
-  let camPos = "N/A";
-  if (cam) {
-    const p = cam.getAttribute('position');
-    camPos = `X:${p.x.toFixed(2)} Y:${p.y.toFixed(2)} Z:${p.z.toFixed(2)}`;
-  }
-
   let html = `<div style="border-bottom:1px solid #444; padding-bottom:5px; margin-bottom:5px;">`;
   html += `State: ${window.xrState}<br>`;
-  html += `Cam: ${camPos}<br>`;
-  html += `<button onclick="fixGyro()" style="width:100%; background:#28a745; color:white; border:none; margin:2px 0; padding:8px; font-weight:bold;">1. FIX GYRO (PERMISSIONS)</button>`;
-  html += `<button onclick="kickstartXR()" style="width:100%; background:#ffc107; color:black; border:none; margin:2px 0; padding:8px; font-weight:bold;">2. KICKSTART XR8</button>`;
-  html += `<button onclick="teleportToExhibition()" style="width:100%; background:#007bff; color:white; border:none; margin:2px 0; padding:8px; font-weight:bold;">3. TELEPORT</button>`;
-  html += `<button onclick="dismissLoading()" style="width:100%; background:#dc3545; color:white; border:none; margin:2px 0; padding:8px; font-weight:bold;">4. FORCE DISMISS</button>`;
+  html += `<button onclick="requestAllPermissions()" style="width:100%; background:#28a745; color:white; border:none; margin:2px 0; padding:5px; font-weight:bold;">1. REQUEST PERMISSIONS</button>`;
+  html += `<button onclick="fixGyro()" style="width:100%; background:#ffc107; color:black; border:none; margin:2px 0; padding:5px; font-weight:bold;">2. FIX GYRO</button>`;
+  html += `<button onclick="teleportToExhibition()" style="width:100%; background:#007bff; color:white; border:none; margin:2px 0; padding:5px; font-weight:bold;">3. TELEPORT</button>`;
+  html += `<button onclick="dismissLoading()" style="width:100%; background:#dc3545; color:white; border:none; margin:2px 0; padding:5px; font-weight:bold;">4. FORCE DISMISS</button>`;
   html += `</div>`;
   
   html += `<strong>Distances:</strong><br>`;
   Object.keys(debugData).forEach(k => {
     const e = debugData[k];
     html += `${e.name}: ${e.distance.toFixed(1)}m<br>`;
-  });
-
-  html += `<br><strong>Logs:</strong><br>`;
-  (window.systemLogs || []).slice().reverse().slice(0, 10).forEach(l => {
-    html += `<div style="font-size:9px; border-bottom:1px solid #222;">[${l.time}] ${l.msg}</div>`;
   });
   content.innerHTML = html;
 };
@@ -123,7 +77,6 @@ AFRAME.registerComponent('gps-north-align', {
       if (h !== undefined && !this.aligned) {
         this.el.setAttribute('rotation', `0 ${-h} 0`);
         this.aligned = true;
-        window.xrState = "North Aligned";
       }
     };
     window.addEventListener('deviceorientationabsolute', this.handler, true);
