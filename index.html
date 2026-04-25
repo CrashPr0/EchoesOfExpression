@@ -6,13 +6,13 @@
     
     <!-- 1. 8th Wall Engine & Extras (Order is critical) -->
     <!-- Load the engine first -->
-    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" crossorigin="anonymous" onerror="window.addLog('FAILED to load XR Engine Binary', 'error')"></script>
     
     <!-- Load A-Frame + 8th Wall Bridge second -->
-    <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" crossorigin="anonymous" onerror="window.addLog('FAILED to load 8frame Bridge', 'error')"></script>
     
     <!-- Load UI Extras last -->
-    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous" onerror="window.addLog('FAILED to load XRExtras', 'error')"></script>
 
     <script>
       // 8th Wall Safety Bridge
@@ -62,7 +62,7 @@
 
     <!-- Large video moved outside a-assets to prevent blocking the loading screen -->
     <div style="display:none;">
-      <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
+      <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline onerror="window.addLog('FAILED to load Engine Promo Video: ' + (this.error ? this.error.message : 'Unknown Error'), 'error')"></video>
     </div>
 
     <div id="ui-container">
@@ -116,6 +116,9 @@
     <!-- WASM Decoders & Custom Logic -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/draco_decoder.js"></script>
     <script src="https://unpkg.com/meshoptimizer@0.21.0/meshopt_decoder.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>"></script>
     <script src="app.js"></script>
   </body>
 </html>
