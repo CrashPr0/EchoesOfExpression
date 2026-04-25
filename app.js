@@ -19,6 +19,37 @@ AFRAME.registerComponent('play-on-click', {
   }
 });
 
+// Global debug state
+const debugData = {};
+
+function updateDebugUI() {
+  const content = document.getElementById('debug-content');
+  if (!content || document.getElementById('debug-panel').style.display === 'none') return;
+  
+  let html = '<strong>Distance Tracker</strong><br>';
+  Object.keys(debugData).forEach(id => {
+    const entry = debugData[id];
+    const color = entry.distance <= entry.activation ? '#00ff00' : '#ff0000';
+    html += `<div class="debug-row">
+      ${entry.name}: <span style="color:${color}">${entry.distance.toFixed(1)}m</span> (${entry.isLoaded ? 'Loaded' : 'Wait'})
+    </div>`;
+  });
+
+  html += '<br><strong>System Logs</strong><br>';
+  // Use global systemLogs from window
+  const logs = window.systemLogs || [];
+  logs.slice().reverse().forEach(log => {
+    const color = log.type === 'error' ? '#ff4444' : (log.type === 'warn' ? '#ffaa00' : '#00ff00');
+    html += `<div class="debug-row" style="color:${color}; font-size: 10px;">
+      [${log.time}] ${log.msg}
+    </div>`;
+  });
+  
+  content.innerHTML = html;
+}
+
+setInterval(updateDebugUI, 1000);
+
 // Align 8th Wall SLAM world with North using device compass
 AFRAME.registerComponent('gps-north-align', {
   init: function () {
@@ -30,7 +61,7 @@ AFRAME.registerComponent('gps-north-align', {
         this.hasAligned = true;
         console.log("World aligned to North:", heading);
         const ui = document.getElementById('gps-status');
-        if (ui) ui.innerHTML += "<br>Compass Aligned";
+        if (ui) ui.innerHTML += "<br>Compass Aligned: " + heading.toFixed(1) + "°";
       }
     };
 
@@ -50,6 +81,7 @@ AFRAME.registerComponent('gps-new-place', {
   init: function () {
     this.isLoaded = false;
     this.updatePosition = this.updatePosition.bind(this);
+    this.entityName = this.el.getAttribute('data-name') || 'Unnamed Entity';
     
     if (this.el.sceneEl.renderStarted) {
       this.begin();
@@ -60,14 +92,14 @@ AFRAME.registerComponent('gps-new-place', {
   begin: function() {
     const isMobile = AFRAME.utils.device.isMobile();
     if (!isMobile) {
-      this.initialPos = { coords: { latitude: 37.336111, longitude: -121.885083 } };
+      this.initialPos = { coords: { latitude: 37.336111, longitude: -121.885083, accuracy: 0 } };
       this.updatePosition();
     } else {
       this.watchId = navigator.geolocation.watchPosition(pos => {
         this.initialPos = pos;
         this.updatePosition();
         const ui = document.getElementById('gps-status');
-        if (ui) ui.innerHTML = `Lat: ${pos.coords.latitude.toFixed(5)} <br> Lon: ${pos.coords.longitude.toFixed(5)}`;
+        if (ui) ui.innerHTML = `Lat: ${pos.coords.latitude.toFixed(5)} <br> Lon: ${pos.coords.longitude.toFixed(5)} <br> Acc: ${pos.coords.accuracy.toFixed(1)}m`;
       }, err => {
         console.error("GPS Error:", err);
       }, {enableHighAccuracy: true});
@@ -75,6 +107,7 @@ AFRAME.registerComponent('gps-new-place', {
   },
   remove: function() {
     if (this.watchId) navigator.geolocation.clearWatch(this.watchId);
+    delete debugData[this.entityName];
   },
   updatePosition: function () {
     if (!this.initialPos) return;
@@ -102,6 +135,14 @@ AFRAME.registerComponent('gps-new-place', {
     const zPos = -distance * Math.cos(bearing * Math.PI / 180);
     
     this.el.setAttribute('position', `${xPos} 0 ${zPos}`);
+
+    // Update debug log
+    debugData[this.entityName] = {
+      name: this.entityName,
+      distance: distance,
+      activation: this.data.activationDist,
+      isLoaded: this.isLoaded
+    };
 
     if (!this.placeholder && this.data.modelId) {
       this.placeholder = document.createElement('a-box');

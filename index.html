@@ -17,6 +17,34 @@
   </head>
   
   <body style="margin: 0; overflow: hidden;">
+    <script>
+      // Early Logger - Catches errors before any other scripts run
+      window.systemLogs = [];
+      window.toggleDebug = () => {
+        const panel = document.getElementById('debug-panel');
+        if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      };
+
+      const originalLog = console.log;
+      const originalError = console.error;
+
+      window.addLog = (msg, type = 'log') => {
+        const time = new Date().toLocaleTimeString();
+        window.systemLogs.push({ time, msg, type });
+        if (window.systemLogs.length > 50) window.systemLogs.shift();
+        if (type === 'error' && document.getElementById('debug-panel')) {
+          document.getElementById('debug-panel').style.display = 'block';
+        }
+      };
+
+      console.log = (...args) => { addLog(args.join(' '), 'log'); originalLog.apply(console, args); };
+      console.warn = (...args) => { addLog(args.join(' '), 'warn'); originalLog.apply(console, args); };
+      console.error = (...args) => { addLog(args.join(' '), 'error'); originalError.apply(console, args); };
+
+      window.onerror = (msg, url, line) => { console.error(`ERR: ${msg} [${line}]`); return false; };
+      window.onunhandledrejection = e => { console.error(`PROMISE ERR: ${e.reason}`); };
+    </script>
+
     <!-- Large video moved outside a-assets to prevent blocking the loading screen -->
     <div style="display:none;">
       <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
@@ -25,6 +53,12 @@
     <div id="ui-container">
       <h3>Echoes of Expression</h3>
       <div id="gps-status">Finding location...</div>
+    </div>
+
+    <button class="debug-btn" onclick="toggleDebug()">Debug</button>
+    <div id="debug-panel">
+      <strong>System Debug Log</strong>
+      <div id="debug-content"></div>
     </div>
     
     <a-scene
@@ -43,24 +77,24 @@
 
       <a-entity gps-north-align>
         <!-- HEAVY MODELS -->
-        <!-- <a-entity gps-new-place="latitude: 37.336849; longitude: -121.885216; modelId: Expression/text_as_image.glb; activationDist: 50;" scale="1 1 1"></a-entity> -->
-        <!-- <a-entity gps-new-place="latitude: 37.335722; longitude: -121.882500; modelId: Expression/wwa_pt_01.glb; activationDist: 50;" scale="1 1 1"></a-entity> -->
-        <!-- <a-entity gps-new-place="latitude: 37.335472; longitude: -121.883389; modelId: Expression/wwa_pt_02.glb; activationDist: 50;" scale="1 1 1"></a-entity> -->
-        <a-entity gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;" scale="1 1 1"></a-entity>
+        <!-- <a-entity data-name="Text as Image" gps-new-place="latitude: 37.336849; longitude: -121.885216; modelId: Expression/text_as_image.glb; activationDist: 50;" scale="1 1 1"></a-entity> -->
+        <!-- <a-entity data-name="WWA Pt 1" gps-new-place="latitude: 37.335722; longitude: -121.882500; modelId: Expression/wwa_pt_01.glb; activationDist: 50;" scale="1 1 1"></a-entity> -->
+        <!-- <a-entity data-name="WWA Pt 2" gps-new-place="latitude: 37.335472; longitude: -121.883389; modelId: Expression/wwa_pt_02.glb; activationDist: 50;" scale="1 1 1"></a-entity> -->
+        <a-entity data-name="Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb; activationDist: 50;" scale="1 1 1"></a-entity>
 
         <!-- SMALL MODELS -->
-        <a-entity gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: Expression/eoe_monster_animation.glb;" scale="1 1 1"></a-entity>
-        <a-entity gps-new-place="latitude: 37.336111; longitude: -121.885083;">
+        <a-entity data-name="Monster" gps-new-place="latitude: 37.335778; longitude: -121.885500; modelId: Expression/eoe_monster_animation.glb;" scale="1 1 1"></a-entity>
+        <a-entity data-name="Commotion Group" gps-new-place="latitude: 37.336111; longitude: -121.885083;">
           <a-entity id="commotion_wrapper">
             <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_01.glb" position="-2 0 0" scale="1 1 1"></a-entity>
             <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_02.glb" position="0 0 0" scale="1 1 1"></a-entity>
             <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_03.glb" position="2 0 0" scale="1 1 1"></a-entity>
           </a-entity>
         </a-entity>
-        <a-entity gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: Expression/immersion_eoe_TV_animation.glb;" scale="1 1 1"></a-entity>
-        <a-entity gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: Expression/immersion_eoe_abstract_bird_animation.glb;" scale="1 1 1"></a-entity>
-        <a-entity gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: Expression/immersion_eoe_spongemeboi_animation.glb;" scale="1 1 1"></a-entity>
-        <a-video src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" scale="1 1 1" play-on-click class="clickable"></a-video>
+        <a-entity data-name="TV Animation" gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: Expression/immersion_eoe_TV_animation.glb;" scale="1 1 1"></a-entity>
+        <a-entity data-name="Bird Animation" gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: Expression/immersion_eoe_abstract_bird_animation.glb;" scale="1 1 1"></a-entity>
+        <a-entity data-name="Spongebob" gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: Expression/immersion_eoe_spongemeboi_animation.glb;" scale="1 1 1"></a-entity>
+        <a-video data-name="Engine Promo Video" src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" scale="1 1 1" play-on-click class="clickable"></a-video>
       </a-entity>
     </a-scene>
 

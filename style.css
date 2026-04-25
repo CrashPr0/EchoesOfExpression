@@ -17,4 +17,40 @@ body, html {
   background: rgba(0, 0, 0, 0.5);
   padding: 10px;
   border-radius: 8px;
+  pointer-events: none;
+}
+
+#debug-panel {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  max-height: 40vh;
+  background: rgba(0, 0, 0, 0.8);
+  color: #00ff00;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  overflow-y: auto;
+  z-index: 100001; /* Above 8th Wall */
+  display: none;
+}
+
+.debug-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100002; /* Above everything */
+  padding: 8px 12px;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.debug-row {
+  border-bottom: 1px solid #333;
+  padding: 4px 0;
 }
