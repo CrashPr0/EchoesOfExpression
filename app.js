@@ -7,9 +7,11 @@ AFRAME.registerComponent('play-on-click', {
       const video = document.querySelector(this.el.getAttribute('src'));
       if (video) video.play().catch(e => console.error("APP: Play fail", e));
     };
+    this.el.addEventListener('click', this.onClick);
   },
-  play: function () { window.addEventListener('click', this.onClick); },
-  pause: function () { window.removeEventListener('click', this.onClick); }
+  remove: function () {
+    this.el.removeEventListener('click', this.onClick);
+  }
 });
 
 AFRAME.registerComponent('gps-north-align', {
