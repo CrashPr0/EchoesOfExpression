@@ -1,6 +1,41 @@
 console.log("APP: Script started.");
 
 // 1. A-Frame Components
+
+// Single system-level tick drives all mixers — avoids registering a tick
+// callback on every individual entity, which was overloading the render loop.
+AFRAME.registerSystem('animation-mixer', {
+  init: function () { this.mixers = []; },
+  tick: function (_, dt) {
+    this.mixers.forEach(function (m) { m.update(dt / 1000); });
+  },
+  add: function (mixer) { this.mixers.push(mixer); },
+  remove: function (mixer) {
+    var i = this.mixers.indexOf(mixer);
+    if (i !== -1) this.mixers.splice(i, 1);
+  }
+});
+
+AFRAME.registerComponent('animation-mixer', {
+  init: function () {
+    this.mixer = null;
+    this.system = this.el.sceneEl.systems['animation-mixer'];
+    this.onModelLoaded = this.onModelLoaded.bind(this);
+    this.el.addEventListener('model-loaded', this.onModelLoaded);
+  },
+  onModelLoaded: function (e) {
+    const model = e.detail.model;
+    if (!model || !model.animations || !model.animations.length) return;
+    this.mixer = new THREE.AnimationMixer(model);
+    model.animations.forEach(clip => this.mixer.clipAction(clip).play());
+    this.system.add(this.mixer);
+  },
+  remove: function () {
+    this.el.removeEventListener('model-loaded', this.onModelLoaded);
+    if (this.mixer) { this.mixer.stopAllAction(); this.system.remove(this.mixer); }
+  }
+});
+
 AFRAME.registerComponent('play-on-click', {
   init: function () {
     this.onClick = () => {
@@ -57,6 +92,7 @@ AFRAME.registerComponent('gps-new-place', {
     window.debugData[this.name] = { name:this.name, distance:dist };
     if (!this.loaded && dist <= this.data.activationDist && this.data.modelId) {
       this.el.setAttribute('gltf-model', this.data.modelId);
+      this.el.setAttribute('animation-mixer', '');
       this.loaded = true;
     }
   }
