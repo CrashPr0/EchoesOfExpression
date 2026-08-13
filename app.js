@@ -437,8 +437,32 @@
       video.id = 'video_' + art.id;
       document.querySelector('#video-assets').appendChild(video);
 
+      // Shape the plane from the video's real dimensions once they are known.
+      // These come from a mix of sources — the Cameo piece was shot in
+      // portrait — so assuming 16:9 would squash half of them.
       var w = art.width || 3.2;
-      rec.el.setAttribute('geometry', 'primitive: plane; width: ' + w + '; height: ' + (w * 9 / 16));
+      var setShape = function (aspect) {
+        var h = w * aspect;
+        rec.el.setAttribute('geometry',
+          'primitive: plane; width: ' + w + '; height: ' + h.toFixed(3));
+        // A plane is centred on its origin, so a tall portrait video hung at
+        // eye height would sink into the pavement. Treat `elevation` as the
+        // height of the video's bottom edge instead.
+        if (rec.local) {
+          rec.el.setAttribute('position', {
+            x: rec.local.x,
+            y: (art.elevation || 0) + h / 2,
+            z: rec.local.z,
+          });
+        }
+      };
+      setShape(9 / 16);
+      video.addEventListener('loadedmetadata', function () {
+        if (!video.videoWidth) return;
+        setShape(video.videoHeight / video.videoWidth);
+        LOG.info(art.title + ': video ' + video.videoWidth + '×' + video.videoHeight);
+      }, { once: true });
+
       rec.el.setAttribute('material', 'src: #' + video.id + '; shader: flat; side: double');
       rec.el.setAttribute('billboard', '');
       rec.el.classList.add('artwork-hit');

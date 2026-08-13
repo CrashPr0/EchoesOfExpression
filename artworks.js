@@ -38,7 +38,10 @@
                  Use instead of `scale` when a file was exported in the wrong
                  units. Overrides `scale`.
      yaw         Rotation in degrees around the vertical axis.
-     elevation   Metres above ground. Use for works that should float.
+     elevation   Metres above ground. For models, how far to float the piece.
+                 For videos, the height of the screen's bottom edge.
+     width       Videos only: screen width in metres. The height follows from
+                 the video's own aspect ratio, so portrait clips stay portrait.
      offset      [x, z] metres, for works that share one GPS coordinate.
                  +x is east, +z is south.
      radius      Metres away at which the model starts downloading (default 60).
