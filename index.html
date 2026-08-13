@@ -1,135 +1,175 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <title>Echoes of Expression AR Exhibition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0b0d10">
+    <title>Echoes of Expression — AR Exhibition</title>
     <link rel="stylesheet" href="style.css">
-    
-    <!-- 1. 8th Wall Engine & Extras (2026 Distributed Engine) -->
+
+    <!-- Logging bootstrap. Loaded first so it captures everything that follows. -->
+    <script>
+      window.systemLogs = [];
+      (function () {
+        var native = {
+          log:   console.log.bind(console),
+          warn:  console.warn.bind(console),
+          error: console.error.bind(console),
+        };
+        function record(type, args) {
+          var msg = Array.prototype.map.call(args, function (a) {
+            if (a instanceof Error) return a.message;
+            return typeof a === 'object' ? JSON.stringify(a) : String(a);
+          }).join(' ');
+          window.systemLogs.push({ time: new Date().toLocaleTimeString(), msg: msg, type: type });
+          if (window.systemLogs.length > 300) window.systemLogs.shift();
+          native[type](msg);
+        }
+        window.Log = {
+          info:  function () { record('log', arguments); },
+          warn:  function () { record('warn', arguments); },
+          error: function () { record('error', arguments); },
+        };
+        console.log   = function () { record('log', arguments); };
+        console.warn  = function () { record('warn', arguments); };
+        console.error = function () { record('error', arguments); };
+        window.addEventListener('error', function (e) { record('error', [e.message]); });
+        window.addEventListener('unhandledrejection', function (e) {
+          record('error', ['Unhandled rejection: ' + (e.reason && e.reason.message || e.reason)]);
+        });
+
+        window.copyLogs = function () {
+          var text = window.systemLogs.map(function (l) { return '[' + l.time + '] ' + l.msg; }).join('\n');
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function () { alert('Logs copied.'); });
+          } else {
+            var ta = document.createElement('textarea');
+            ta.value = text; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            alert('Logs copied.');
+          }
+        };
+      })();
+    </script>
+
+    <!-- XR Engine (Niantic Spatial distributed build — no app key required) -->
     <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" crossorigin="anonymous" data-preload-chunks="slam" async></script>
     <script src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@8thwall/xrextras@1/dist/xrextras.js" crossorigin="anonymous" async></script>
   </head>
-  
-  <body style="margin: 0; overflow: hidden;">
-    <!-- 
+
+  <body>
+    <!--
       This product includes the XR Engine software developed by Niantic Spatial, Inc.
-      Copyright © 2026 Niantic Spatial, Inc. All rights reserved. 
+      Copyright © 2026 Niantic Spatial, Inc. All rights reserved.
     -->
 
-    <script>
-      window.systemLogs = [];
-      window.xrState = "Initializing...";
-      
-      window.addLog = (msg, type = 'log') => {
-        const time = new Date().toLocaleTimeString();
-        window.systemLogs.push({ time, msg, type });
-        if (window.systemLogs.length > 100) window.systemLogs.shift();
-        if (window.updateDebugUI) window.updateDebugUI();
-      };
-      console.log = (...args) => { addLog(args.join(' '), 'log'); };
-      console.warn = (...args) => { addLog(args.join(' '), 'warn'); };
-      console.error = (...args) => { addLog(args.join(' '), 'error'); };
-
-      window.addEventListener('realityready', () => { window.xrState = "Reality Ready (Live)"; });
-      window.addEventListener('xrtrackingstatus', (e) => { window.xrState = "Tracking: " + e.detail.status; });
-      
-      window.copyLogs = () => {
-        const text = window.systemLogs.map(l => `[${l.time}] ${l.msg}`).join('\n');
-        const ta = document.createElement("textarea");
-        ta.value = text; document.body.appendChild(ta); ta.select();
-        document.execCommand("copy"); document.body.removeChild(ta);
-        alert("Logs copied!");
-      };
-      
-      window.toggleDebug = () => {
-        const p = document.getElementById('debug-panel');
-        p.style.display = p.style.display === 'none' ? 'block' : 'none';
-      };
-    </script>
-
-    <div style="display:none;">
-      <video id="engine_promo" src="Expression/Individual artwork/Engine Video/Engine AR Promo.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline></video>
-    </div>
-
-    <div id="ui-container">
-      <h3>Echoes of Expression</h3>
-      <div id="gps-status">Checking GPS...</div>
-    </div>
-
-    <button class="debug-btn" onclick="toggleDebug()">Debug</button>
-    
-    <div id="debug-panel">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-        <strong>System Debug</strong>
-        <button onclick="copyLogs()" style="font-size: 10px;">Copy Logs</button>
+    <!-- ==================================================================
+         START GATE
+         iOS will not give up the compass unless the request comes from a
+         real tap, so the experience begins behind this button.
+         ================================================================== -->
+    <div id="start-gate">
+      <div class="gate-inner">
+        <p class="gate-eyebrow">Immersion 2026 · San José State University</p>
+        <h1>Echoes of Expression</h1>
+        <p class="gate-lede">
+          An augmented reality exhibition across the SJSU campus, the MLK Library
+          and City Hall. Walk the route and the artworks appear around you.
+        </p>
+        <ol class="gate-steps">
+          <li>Allow camera and location when asked</li>
+          <li>Hold your phone up and look around</li>
+          <li>Tap an artwork to read about it</li>
+        </ol>
+        <button id="start-button">Start the exhibition</button>
+        <p class="gate-note">Best outdoors, with sound on. Uses a lot of data.</p>
       </div>
-      <div id="debug-content"></div>
     </div>
-    
+
+    <!-- ==================================================================
+         HEADS-UP DISPLAY
+         ================================================================== -->
+    <header id="hud">
+      <div id="status-line" data-tone="wait">Starting…</div>
+      <div class="hud-buttons">
+        <button id="index-button" aria-label="All artworks">All works</button>
+        <button id="debug-button" aria-label="Debug">Debug</button>
+      </div>
+    </header>
+
+    <div id="loading-chip" class="hidden"></div>
+
+    <button id="nearest-chip" class="hidden">
+      <span class="chip-label">Nearest</span>
+      <span class="chip-title"></span>
+      <span class="chip-dist"></span>
+    </button>
+
+    <!-- ==================================================================
+         ARTIST STATEMENT PANEL
+         ================================================================== -->
+    <div id="panel-scrim" class="hidden"></div>
+    <section id="artwork-panel" class="hidden" role="dialog" aria-label="Artwork details">
+      <button id="panel-close" aria-label="Close">&times;</button>
+      <div id="panel-content"></div>
+    </section>
+
+    <!-- ==================================================================
+         ARTWORK INDEX
+         ================================================================== -->
+    <section id="index-sheet" class="hidden" role="dialog" aria-label="All artworks">
+      <header>
+        <h2>All works</h2>
+        <button id="index-close" aria-label="Close">&times;</button>
+      </header>
+      <div id="index-content"></div>
+    </section>
+
+    <!-- ==================================================================
+         DEBUG
+         ================================================================== -->
+    <section id="debug-panel" class="hidden">
+      <div id="debug-content"></div>
+    </section>
+
+    <!-- Videos are created here on demand by app.js -->
+    <div id="video-assets" hidden></div>
+
+    <!-- ==================================================================
+         AR SCENE
+         ================================================================== -->
     <a-scene
       xrweb
       xrextras-almost-there
       xrextras-loading
       xrextras-runtime-error
+      xrextras-pause-on-blur
+      tap-select
       vr-mode-ui="enabled: false"
-      renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true; colorManagement: true;">
-      
-      <a-assets></a-assets>
+      device-orientation-permission-ui="enabled: false"
+      gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/"
+      renderer="antialias: true; alpha: true; colorManagement: true; physicallyCorrectLights: true;">
 
-      <a-camera 
-        id="camera" 
-        camera="near: 0.1; far: 10000;" 
-        xrextras-camera-pipeline 
-        raycaster="objects: .clickable">
+      <a-assets timeout="30000"></a-assets>
+
+      <a-camera
+        id="camera"
+        position="0 0 0"
+        look-controls="enabled: false"
+        wasd-controls="enabled: false"
+        camera="near: 0.05; far: 3000;">
       </a-camera>
 
-      <a-entity gps-north-align>
-        <!-- Who We Are -->
-        <a-entity data-name="Victory Statue Cameo" gps-new-place="latitude: 37.335404; longitude: -121.882501; modelId: Expression/wwa_cameo.glb;"></a-entity>
-        <a-entity data-name="Victory Statue Pt 1" gps-new-place="latitude: 37.335500; longitude: -121.882556; modelId: Expression/wwa_pt_01_vict_stat.glb;"></a-entity>
-        
-        <a-entity data-name="Path to Victory" gps-new-place="latitude: 37.335722; longitude: -121.882500;">
-          <a-entity gltf-model="Expression/wwa_pt_03_tow_hall_draco" position="0 0 0"></a-entity>
-          <a-entity gltf-model="Expression/wwa_endangered_draco" position="2 0 0"></a-entity>
-        </a-entity>
+      <a-entity light="type: ambient; intensity: 1.1"></a-entity>
+      <a-entity light="type: directional; intensity: 1.4" position="2 8 4"></a-entity>
 
-        <a-entity data-name="Tower Hall Lawn" gps-new-place="latitude: 37.335472; longitude: -121.883389; modelId: Expression/wwa_pt_02_tow_hall.glb;"></a-entity>
-
-        <!-- Echoes of Expression -->
-        <a-entity data-name="MLK Official Map" gps-new-place="latitude: 37.335306; longitude: -121.884556; modelId: Expression/immersion_eoe_official_library_map.glb;"></a-entity>
-        
-        <!-- Monster model missing from repo, placeholder used below if found -->
-        <a-entity data-name="Monster (Missing)" gps-new-place="latitude: 37.335778; longitude: -121.885500;"></a-entity>
-
-        <a-entity data-name="Commotion Walkway" gps-new-place="latitude: 37.336111; longitude: -121.885083;">
-          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_01.glb" position="-2 0 0"></a-entity>
-          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_02.glb" position="0 0 0"></a-entity>
-          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_03.glb" position="2 0 0"></a-entity>
-        </a-entity>
-
-        <a-entity data-name="Commotion Theatre" gps-new-place="latitude: 37.336278; longitude: -121.884778;">
-          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_04.glb" position="-2 0 0"></a-entity>
-          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_05.glb" position="0 0 0"></a-entity>
-          <a-entity gltf-model="Expression/immersion_eoe_commotion_pt_06.glb" position="2 0 0"></a-entity>
-        </a-entity>
-
-        <a-entity data-name="TV Animation" gps-new-place="latitude: 37.336500; longitude: -121.884972; modelId: Expression/immersion_eoe_TV_animation.glb;"></a-entity>
-        
-        <!-- text_as_image_draco is the optimized version -->
-        <a-entity data-name="Text as Image" gps-new-place="latitude: 37.336849; longitude: -121.885216; modelId: Expression/text_as_image_draco;"></a-entity>
-
-        <a-entity data-name="Bird Animation" gps-new-place="latitude: 37.337694; longitude: -121.885472; modelId: Expression/immersion_eoe_abstract_bird_animation.glb;"></a-entity>
-        <a-entity data-name="Spongebob" gps-new-place="latitude: 37.337472; longitude: -121.885667; modelId: Expression/immersion_eoe_spongemeboi_animation.glb;"></a-entity>
-        
-        <a-video data-name="Engine Promo Video" src="#engine_promo" width="16" height="9" gps-new-place="latitude: 37.337667; longitude: -121.886417;" play-on-click class="clickable"></a-video>
-      </a-entity>
+      <!-- Every artwork is placed inside this container by app.js -->
+      <a-entity id="world"></a-entity>
     </a-scene>
 
-    <!-- Post-scene scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/draco_decoder.js"></script>
-    <script src="https://unpkg.com/meshoptimizer@0.21.0/meshopt_decoder.js"></script>
+    <script src="artworks.js"></script>
+    <script src="ui.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

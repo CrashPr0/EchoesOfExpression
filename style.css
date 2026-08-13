@@ -1,56 +1,494 @@
-/* Basic styling for full screen AR */
-body, html {
+/* ============================================================================
+   ECHOES OF EXPRESSION — SCREEN UI
+   Built for a phone held at arm's length in daylight: heavy contrast, large
+   tap targets, nothing thinner than 15px.
+   ========================================================================= */
+
+:root {
+  --ink:        #f4f6f8;
+  --ink-dim:    #a9b2bd;
+  --surface:    rgba(14, 17, 21, 0.92);
+  --surface-2:  rgba(30, 35, 42, 0.92);
+  --line:       rgba(255, 255, 255, 0.14);
+  --accent:     #5ec2c8;
+  --warn:       #f2b134;
+  --bad:        #ff6b6b;
+  --safe-top:   env(safe-area-inset-top, 0px);
+  --safe-bot:   env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: sans-serif;
+  background: #000;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
-#ui-container {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 10;
-  color: white;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 10px;
-  border-radius: 8px;
+button {
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hidden { display: none !important; }
+.muted  { color: var(--ink-dim); }
+
+/* ==========================================================================
+   START GATE
+   ========================================================================== */
+#start-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100010;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #16323a 0%, #0b0d10 55%, #000 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bot));
+  overflow-y: auto;
+}
+
+.gate-inner { max-width: 480px; width: 100%; }
+
+.gate-eyebrow {
+  margin: 0 0 12px;
+  font-size: 13px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+#start-gate h1 {
+  margin: 0 0 16px;
+  font-size: clamp(34px, 10vw, 52px);
+  line-height: 1.03;
+  letter-spacing: -0.02em;
+}
+
+.gate-lede {
+  margin: 0 0 24px;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
+
+.gate-steps {
+  margin: 0 0 28px;
+  padding-left: 20px;
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--ink);
+}
+.gate-steps li::marker { color: var(--accent); font-weight: 700; }
+
+#start-button {
+  display: block;
+  width: 100%;
+  padding: 18px;
+  font-size: 18px;
+  font-weight: 650;
+  color: #06232a;
+  background: var(--accent);
+  border: none;
+  border-radius: 14px;
+}
+#start-button:active { transform: scale(0.985); }
+
+.gate-note {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+
+/* ==========================================================================
+   HUD
+   ========================================================================== */
+#hud {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(10px + var(--safe-top)) 12px 10px;
   pointer-events: none;
 }
 
-#debug-panel {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
-  max-height: 40vh;
-  background: rgba(0, 0, 0, 0.8);
-  color: #00ff00;
-  font-family: monospace;
-  font-size: 12px;
-  padding: 10px;
-  border-radius: 8px;
-  overflow-y: auto;
-  z-index: 100001; /* Above 8th Wall */
-  display: none;
+#status-line {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 13px;
+  font-size: 14px;
+  font-weight: 550;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#status-line[data-tone="wait"] { color: var(--warn); }
+#status-line[data-tone="bad"]  { color: var(--bad); }
+#status-line[data-tone="ok"]   { color: var(--accent); }
+
+.hud-buttons { display: flex; gap: 8px; pointer-events: auto; }
+
+.hud-buttons button {
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
 }
 
-.debug-btn {
+#loading-chip {
+  position: fixed;
+  top: calc(60px + var(--safe-top));
+  left: 12px;
+  z-index: 100;
+  max-width: calc(100% - 24px);
+  padding: 8px 13px;
+  font-size: 13px;
+  color: var(--warn);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+/* ==========================================================================
+   NEAREST WORK CHIP
+   ========================================================================== */
+#nearest-chip {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(14px + var(--safe-bot));
+  z-index: 100;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px;
+  text-align: left;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+}
+#nearest-chip:active { background: var(--surface-2); }
+
+.chip-label {
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.chip-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chip-dist { font-size: 13px; color: var(--ink-dim); white-space: nowrap; }
+
+/* ==========================================================================
+   ARTIST STATEMENT PANEL
+   ========================================================================== */
+#panel-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 100020;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+#artwork-panel {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 560px;
+  z-index: 100021;
+  max-height: 86vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--line);
+  border-radius: 20px 20px 0 0;
+  padding-bottom: calc(24px + var(--safe-bot));
+  animation: rise 0.22s ease-out;
+}
+
+@keyframes rise {
+  from { transform: translateX(-50%) translateY(14%); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+#panel-close, #index-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 100002; /* Above everything */
-  padding: 8px 12px;
-  background: #444;
-  color: white;
+  top: 10px; right: 10px;
+  z-index: 2;
+  width: 40px; height: 40px;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+
+.panel-media {
+  width: 100%;
+  background: #05070a;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+}
+/* height:auto lets each thumbnail keep its own aspect, so there are no
+   letterbox bars above and below. */
+.panel-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 46vh;
+  object-fit: contain;
+}
+
+.panel-body { padding: 20px; }
+
+.badge {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 5px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--badge, var(--accent));
+  border: 1px solid var(--badge, var(--accent));
+  border-radius: 999px;
+}
+
+.panel-body h2 {
+  margin: 0 0 6px;
+  font-size: 27px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.byline  { margin: 0 0 2px; font-size: 17px; font-weight: 550; color: var(--accent); }
+.medium  { margin: 0 0 16px; font-size: 14px; color: var(--ink-dim); }
+
+.statement {
+  margin: 0 0 20px;
+  font-size: 16px;
+  line-height: 1.62;
+  color: var(--ink);
+}
+
+.panel-body h3 {
+  margin: 22px 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.contributors { margin: 0 0 18px; padding-left: 20px; line-height: 1.7; }
+
+.facts {
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+.facts dt {
+  float: left;
+  clear: left;
+  width: 88px;
+  color: var(--ink-dim);
+  line-height: 1.75;
+}
+.facts dd { margin: 0 0 0 96px; line-height: 1.75; }
+
+.notice {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--warn);
+  background: rgba(242, 177, 52, 0.1);
+  border: 1px solid rgba(242, 177, 52, 0.32);
+  border-radius: 10px;
+}
+
+.action {
+  display: block;
+  width: 100%;
+  margin-top: 18px;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #06232a;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+}
+.action:disabled { opacity: 0.55; }
+
+/* ==========================================================================
+   ARTWORK INDEX
+   ========================================================================== */
+#index-sheet {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 560px;
+  z-index: 100022;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+}
+
+#index-sheet > header {
+  position: relative;
+  flex: none;
+  padding: calc(16px + var(--safe-top)) 20px 14px;
+  border-bottom: 1px solid var(--line);
+}
+#index-sheet h2 { margin: 0; font-size: 21px; }
+#index-close { top: calc(12px + var(--safe-top)); }
+
+#index-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 16px calc(24px + var(--safe-bot));
+}
+
+#index-content h3 {
+  margin: 22px 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--badge, var(--accent));
+}
+
+.index-list { margin: 0; padding: 0; list-style: none; }
+
+.index-list li {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 6px;
+  border-bottom: 1px solid var(--line);
+}
+.index-list li:active { background: var(--surface-2); }
+
+.index-list img {
+  flex: none;
+  width: 54px; height: 54px;
+  /* contain, not cover — these are artworks, so cropping them is wrong */
+  object-fit: contain;
+  background: #05070a;
+  border-radius: 9px;
+}
+
+.index-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.index-text strong { font-size: 16px; font-weight: 600; }
+.index-text em {
+  font-size: 13px;
+  font-style: normal;
+  color: var(--ink-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.index-dist { flex: none; font-size: 13px; color: var(--ink-dim); }
+
+/* ==========================================================================
+   DEBUG
+   ========================================================================== */
+#debug-panel {
+  position: fixed;
+  left: 8px; right: 8px;
+  bottom: calc(8px + var(--safe-bot));
+  z-index: 100030;
+  max-height: 62vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: #9ef7c6;
+  background: rgba(0, 0, 0, 0.93);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.dbg-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.dbg-actions button {
+  flex: 1 1 auto;
+  padding: 9px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #06232a;
+  background: var(--accent);
+  border: none;
+  border-radius: 7px;
+}
+
+.dbg-row { padding: 2px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.dbg-row button {
+  margin-left: 4px;
+  padding: 1px 8px;
+  color: var(--ink);
+  background: #333;
   border: none;
   border-radius: 4px;
-  cursor: pointer;
 }
 
-.debug-row {
-  border-bottom: 1px solid #333;
-  padding: 4px 0;
+.dbg-head {
+  margin: 12px 0 4px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
+
+.dbg-warn {
+  margin: 8px 0;
+  padding: 8px;
+  color: var(--warn);
+  background: rgba(242, 177, 52, 0.1);
+  border-radius: 7px;
+  line-height: 1.55;
+}
+
+.dbg-log { max-height: 200px; overflow-y: auto; line-height: 1.5; }
+.dbg-log .lvl-warn  { color: var(--warn); }
+.dbg-log .lvl-error { color: var(--bad); }
+
+/* Keep 8th Wall's own overlays clear of ours. */
+.xrextras-overlay, .xrextras-loading-container { z-index: 100005 !important; }
