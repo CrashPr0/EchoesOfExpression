@@ -105,17 +105,31 @@
 
       if (art.medium) html += '<p class="medium">' + esc(art.medium) + '</p>';
 
+      if (art.course) {
+        html += '<p class="course">' + esc(art.course).replace(/\n/g, '<br>') + '</p>';
+      }
+
       if (art.statement) {
-        html += '<p class="statement">' + esc(art.statement) + '</p>';
+        // Blank lines are paragraph breaks. Several statements are written as
+        // verse or dialogue, where running them together would lose the shape.
+        art.statement.split(/\n\s*\n/).forEach(function (para) {
+          if (para.trim()) html += '<p class="statement">' + esc(para.trim()) + '</p>';
+        });
       } else {
         html += '<p class="statement muted">The artist statement for this work has ' +
                 'not been added yet.</p>';
       }
 
-      if (art.contributors && art.contributors.length) {
-        html += '<h3>Works in this show</h3><ul class="contributors">';
-        art.contributors.forEach(function (c) { html += '<li>' + esc(c) + '</li>'; });
-        html += '</ul>';
+      // Collaborative works credit everyone, grouped by class where the
+      // exhibition labels do.
+      if (art.contributorGroups && art.contributorGroups.length) {
+        art.contributorGroups.forEach(function (group) {
+          html += '<h3>' + esc(group.label) + '</h3>';
+          html += '<p class="contributors">' + group.names.map(esc).join(' · ') + '</p>';
+        });
+      } else if (art.contributors && art.contributors.length) {
+        html += '<h3>Contributors</h3>';
+        html += '<p class="contributors">' + art.contributors.map(esc).join(' · ') + '</p>';
       }
 
       html += '<dl class="facts">';

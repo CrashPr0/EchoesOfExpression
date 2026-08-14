@@ -45,8 +45,29 @@ Two things to know:
 
 ## Adding artist statements
 
-This is the main thing still outstanding. Open `artworks.js`, find the work, and
-fill in the quotes:
+7 of 23 works have their statements in. Where they came from:
+
+- **Echoes of Expression** — the label cards in Drive under
+  *Official Artists Statement for EOE*, one PNG per work, named
+  `artist_name_work_title.png`. Each carries artist, title, year, course and
+  statement.
+- **Who We Are** — the exported slides (`1.png`–`27.png`) in the *wwa artist
+  statement slideshow* folder's parent.
+
+**The 16 remaining are not simply missing — they are a different shape.**
+Tower Hall, Victory Statue and Commotion are not single works; each is a panel
+or gallery model displaying many individual student pieces. The statements in
+Drive are written per *individual piece* (Malaya Mendoza's *Chinese New Years*,
+Andy Au's *Acceptance*, and so on), not per panel.
+
+So each of those entries needs either a short curatorial description of the
+panel, or the list of works it contains. `contributorGroups` is built for the
+second option — see *Text as Image*, which does exactly that with 41 names
+across two classes. What is missing is the mapping of which individual pieces
+appear on which panel, which has to come from the exhibition team.
+
+To fill in a straightforward single-artist work, open `artworks.js` and
+complete the quotes:
 
 ```js
 {

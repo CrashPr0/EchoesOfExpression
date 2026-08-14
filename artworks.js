@@ -197,7 +197,9 @@ window.EXHIBITION = {
       asset:   'Expression/wwa_endangered_draco',       // Draco compressed
       preview: 'Expression/previews/wwa_endangered.png',
       // Attributed from the source filenames in the Drive artwork folder
-      // ("endangered sound - Quynh Ngo.aif"). Worth confirming.
+      // ("endangered sound - Quynh Ngo.aif"). NOT yet confirmed: the statement
+      // cards list both a Diem Quynh Ngo (Wandering Monster) and a Quynh Vu, so
+      // check which student this is before it goes on a wall.
       artist:    'Quynh Ngo',
       year:      '',
       medium:    '',
@@ -263,7 +265,7 @@ window.EXHIBITION = {
 
     {
       id:      'eoe_monster',
-      title:   'Monster',
+      title:   'Wandering Monster',
       exhibit: 'eoe',
       area:    'MLK Library Main Entrance — City Side',
       lat:     37.335778,
@@ -271,10 +273,23 @@ window.EXHIBITION = {
       type:    'model',
       asset:   'Expression/eoe_monster_animation.glb',         // awaiting file
       preview: 'Expression/previews/eoe_monster.png',
-      artist:    '',
-      year:      '',
-      medium:    '',
-      statement: '',
+      artist:    'Diem Quynh Ngo',
+      year:      '2025',
+      course:    'ART 74 — Introduction to Digital Media, Professor Xiao Wu',
+      medium:    'Blender',
+      // Blank lines become paragraph breaks in the panel. This one is written
+      // as a dialogue, so the breaks carry meaning — leave them in.
+      statement:
+        'How long have you been lost for?\n\n' +
+        'they ask, looking at the clueless, rusty monster, its skin turning all ' +
+        'red after all the corrosion it endured, wondering how it would feel on ' +
+        'human skin.\n\n' +
+        'I don’t know... I didn’t realize... I thought it was just a short ' +
+        'while.... How about you, how long have you been lost for? they asked, ' +
+        'looking at us.\n\n' +
+        'What do you mean? We’re human, and we’re not lost. We have our houses, ' +
+        'our cars, our money to buy whatever we want! I didn’t ask if you’re ' +
+        'lost or not, I asked how long you’ve been lost for.',
     },
 
     /* --- Commotion: Walkway to Library (three works, one coordinate) ------ */
@@ -393,10 +408,14 @@ window.EXHIBITION = {
       type:    'model',
       asset:   'Expression/immersion_eoe_TV_animation.glb',
       preview: 'Expression/previews/eoe_tv_animation.png',
-      artist:    '',
-      year:      '',
-      medium:    'Animation',
-      statement: '',
+      artist:    'Ally Khoo',
+      year:      '2025',
+      course:    'ART 74 — Introduction to Digital Media, Professor Xiao Wu',
+      medium:    'Blender, Adobe Photoshop and Glitch',
+      statement: 'This TV becomes a living window, streaming the endless motion ' +
+                 'of the ocean to blur the boundary between screen and sea. It ' +
+                 'invites viewers to reflect on nature’s rhythms through a ' +
+                 'synthetic lens, where digital waves echo real ones.',
     },
 
     /* --- Text as Image ---------------------------------------------------
@@ -419,16 +438,49 @@ window.EXHIBITION = {
       type:    'model',
       asset:   'Expression/text_as_image_draco',        // Draco compressed
       preview: 'Expression/previews/eoe_text_as_image_left.png',
-      artist:    '',
-      year:      '',
-      medium:    'Collaborative mini exhibition',
-      statement: '',
+      artist:    'Class of Art 175 and English 135',
+      year:      '2025',
+      course:    'ART 175 — Digital Printmaking, Professor Carla Fisher Schwartz\n' +
+                 'ENGL 135 — Writing Nonfiction, Dr. Brook McClurg',
+      medium:    'Risograph printing, 11″ × 17″',
+      statement:
+        'Text as Image is a collaborative project between Creative Writing and ' +
+        'Digital Printmaking students at San José State University. Creative ' +
+        'Writing students contributed short-form texts — ranging from single ' +
+        'phrases to brief passages — which Digital Printmaking students then ' +
+        'interpreted visually. Each artist selected two pieces of writing to ' +
+        'translate into text-based prints using the Risograph printer, a ' +
+        'printing technique often described as “digital screen printing”. This ' +
+        'cross-disciplinary collaboration between the Departments of Art & Art ' +
+        'History and English offered students a unique opportunity to explore ' +
+        'how creative ideas shift and evolve across mediums.',
       // This file is authored in units that make it 2203 m wide, so it is
       // fitted to a size instead of trusting its own scale. 60 m puts the row
       // of works along the block at roughly 1.4 m each. Adjust to taste.
       fitSize:   60,
-      contributors: [
-        // 'Artist Name',
+      contributorGroups: [
+        {
+          label: 'Art 175 — Digital Printmaking',
+          names: [
+            'Belle Alvarez', 'Shayla Dowling', 'Sravya Duvvuri', 'Galia Foglio',
+            'Drinnie Francisco', 'Nick Guerra', 'Anna Huynh', 'Ashlyn Larrus',
+            'Minh Le', 'Trevor Lindow', 'Jasmine Mirzamani', 'Emma Morales',
+            'Frida Muro Rodriguez', 'Khoa Nguyen', 'Nguyen Nguyen',
+            'Parker Olvera', 'Madelaina Rodrigues', 'Beckett Van Leer',
+            'Seleyna Velasquez', 'Quynh Vu', 'Sean Yagi',
+          ],
+        },
+        {
+          label: 'English 135 — Writing Nonfiction',
+          names: [
+            'Itzel Acevedo-Adame', 'Owen Sallander', 'Matthew Quiambao',
+            'Mckenna Lewis', 'Yasmeen Farid', 'Isabel Gonzalez', 'Fatima Mejia',
+            'Tara Baisley-Gomes', 'Bridget Vanden Broeder', 'Gianna Cardenas',
+            'May Segovia Arce', 'Abby Christy', 'Marilyn Hilton',
+            'Courtney Caldwell', 'Chrissy Molfino', 'Liam Leslie',
+            'Peggy Pollard', 'Noelle Gibbs', 'Noor Malik', 'Natalka Fydyshyn',
+          ],
+        },
       ],
     },
 
@@ -442,15 +494,20 @@ window.EXHIBITION = {
       type:    'model',
       asset:   'Expression/immersion_eoe_abstract_bird_animation.glb',
       preview: 'Expression/previews/eoe_abstract_bird.png',
-      artist:    '',
-      year:      '',
-      medium:    'Animation',
-      statement: '',
+      artist:    'Ronald Cao',
+      year:      '2025',
+      course:    'ART 74 — Introduction to Digital Media, Professor Xiao Wu',
+      medium:    'Blender',
+      statement: 'This geometric, abstract bird captures the essence of freedom ' +
+                 'and movement through angular forms and flowing folds of blue ' +
+                 'and white. The sharp lines and soft curves converge to create ' +
+                 'a dynamic representation of flight, blending precision with ' +
+                 'fluidity in a visual celebration of nature’s grace.',
     },
 
     {
       id:      'eoe_spongemeboi',
-      title:   'Spongemeboi',
+      title:   'Sponge-Me-BOI',
       exhibit: 'eoe',
       area:    'South Entrance City Hall',
       lat:     37.337472,
@@ -458,15 +515,18 @@ window.EXHIBITION = {
       type:    'model',
       asset:   'Expression/immersion_eoe_spongemeboi_animation.glb',
       preview: 'Expression/previews/eoe_spongemeboi.png',
-      artist:    '',
-      year:      '',
-      medium:    'Animation',
-      statement: '',
+      artist:    'Phuong-Trang Maria Vu',
+      year:      '2025',
+      course:    'Personal work',
+      medium:    '3D render (Blender)',
+      statement: 'Just a dumb, unfinished Spongebob model I made for practice. ' +
+                 'Mainly here to share the beautiful chaos of figuring out ' +
+                 'Blender one confused click at a time.',
     },
 
     {
       id:      'eoe_engine_promo',
-      title:   'Engine',
+      title:   'Eng1n3 AR Promo',
       exhibit: 'eoe',
       area:    'City Hall Plaza Center',
       lat:     37.337667,
@@ -475,9 +535,14 @@ window.EXHIBITION = {
       asset:   'Expression/Individual artwork/Engine Video/Engine AR Promo.mp4',
       preview: 'Expression/previews/eoe_engine_promo.png',
       artist:    'Anna Huynh',
-      year:      '',
-      medium:    'Video',
-      statement: '',
+      year:      '2024',
+      course:    'DSGD 131 — Motion Graphics, Professor Yoon Chung Han',
+      medium:    'Adobe Aero, Adobe After Effects, heat transfer vinyl on black hoodies',
+      statement: 'Eng1n3 is an experimental clothing brand that aims to simulate ' +
+                 'moving designs on real clothes. Showcasing the designs through ' +
+                 'the motion graphic and bringing the designs to life with AR and ' +
+                 'projection mapping technology, these methods will bring the ' +
+                 'brand the closest it can to real moving clothes.',
       elevation: 2.2,
       width:     4.8,
     },

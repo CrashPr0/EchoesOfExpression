@@ -294,12 +294,20 @@ button {
 .byline  { margin: 0 0 2px; font-size: 17px; font-weight: 550; color: var(--accent); }
 .medium  { margin: 0 0 16px; font-size: 14px; color: var(--ink-dim); }
 
+.course {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
+
 .statement {
-  margin: 0 0 20px;
+  margin: 0 0 14px;
   font-size: 16px;
   line-height: 1.62;
   color: var(--ink);
 }
+.statement:last-of-type { margin-bottom: 20px; }
 
 .panel-body h3 {
   margin: 22px 0 8px;
@@ -309,7 +317,12 @@ button {
   color: var(--ink-dim);
 }
 
-.contributors { margin: 0 0 18px; padding-left: 20px; line-height: 1.7; }
+.contributors {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--ink-dim);
+}
 
 .facts {
   margin: 0;
